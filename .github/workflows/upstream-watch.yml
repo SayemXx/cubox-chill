@@ -1,0 +1,24 @@
+name: Check MovieBox engine releases
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 6 * * *'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record upstream release for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/mesamirh/MovieBox-Tui/releases/latest > upstream-release.json
+          echo '## Latest MovieBox-TUI release' >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.tag_name, .html_url' upstream-release.json >> "$GITHUB_STEP_SUMMARY"
+          echo 'Review, integrate and test this version before publishing a signed cubox chill APK.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upstream-release
+          path: upstream-release.json

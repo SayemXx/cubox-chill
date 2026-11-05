@@ -1,0 +1,10 @@
+cubox chill
+Developer: Sayem
+
+This application includes MovieBox-TUI by its upstream contributors.
+Upstream: https://github.com/mesamirh/MovieBox-Tui
+Bundled revision: b89065d865f84ab44ee8e76ea278f2c6b4596b9a
+Upstream licenses: MIT OR Apache-2.0. Full texts are preserved in vendor/moviebox-tui.
+
+Playback and offline downloads use Android Media3 from the Android Open Source Project,
+licensed under Apache-2.0. This app is independent of the upstream projects.
