@@ -4,7 +4,7 @@ This is an initial development build of cubox chill, developed for Sayem.
 
 - Android Java compilation: passed on the first corrected build.
 - Numeric update-version comparisons and repository input tests: 3 passed, 0 failed.
-- Android lint: initial compatibility findings corrected; final run pending.
+- Android lint: passed with 0 errors, 12 warnings (SDK/dependency freshness and UI/deprecation recommendations).
 - ARM64 and x86_64 native engine builds: in progress.
 - Device smoke tests and live provider checks: pending native packaging.
 
