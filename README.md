@@ -19,8 +19,9 @@ Requires JDK 21, Android SDK platform 36.1, Gradle 9.5.0, Rust stable (1.90+), a
 
 1. Set `ANDROID_HOME`, `ANDROID_NDK_HOME`, and `JAVA_HOME` for your machine.
 2. Run `scripts/build-native.ps1` on Windows, or `bash scripts/build-native.sh` on Linux.
-3. Run `gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`.
-4. Install `app/build/outputs/apk/debug/app-debug.apk` on an Android 8+ ARM64 device (or x86_64 emulator).
+3. Run `python scripts/collect-licenses.py` to bundle the Rust dependency notices.
+4. Run `gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`.
+5. Install `app/build/outputs/apk/debug/app-debug.apk` on an Android 8+ ARM64 device (or x86_64 emulator).
 
 Both Rust and Android dependencies are downloaded by their standard package managers. The provider source is vendored for reproducibility; `native/Cargo.lock` pins transitive Rust dependencies. The app is Java with native Android views and a JSON JNI bridge, not a web wrapper. `native/src/lib.rs` connects directly to the upstream library.
 

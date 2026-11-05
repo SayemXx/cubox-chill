@@ -34,6 +34,8 @@ public class SmokeInstrumentation extends Instrumentation {
             out.putString("player","PASS: ExoPlayer initializes and releases");
             runOnMainSync(()->{if(Offline.manager==null||Offline.cache==null)throw new AssertionError("Offline manager missing");});
             out.putString("offline","PASS: persistent download database/cache initialize");
+            MediaSmoke.run(this,activity);
+            out.putString("media_pipeline","PASS: authenticated video renders; full download completes; cached video renders with server closed");
             try{
                 Object data=Engine.request(context,Engine.json("op","search","provider","moviebox","query","Big Buck Bunny","page",1));
                 if(!(data instanceof JSONArray))throw new AssertionError("Search returned wrong type");

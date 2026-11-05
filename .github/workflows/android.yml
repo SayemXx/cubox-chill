@@ -26,6 +26,7 @@ jobs:
       - run: bash scripts/build-native.sh
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.1.13356709
+      - run: python3 scripts/collect-licenses.py
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.5.0'

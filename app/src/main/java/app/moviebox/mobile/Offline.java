@@ -63,21 +63,22 @@ final class Offline {
         // Empty stream keys download every rendition, so DownloadHelper selects tracks first.
         DownloadHelper helper=DownloadHelper.forMediaItem(c,item,null,new DefaultHttpDataSource.Factory().setDefaultRequestProperties(headers(source)).setAllowCrossProtocolRedirects(true));
         helper.prepare(new DownloadHelper.Callback() {
-            public void onPrepared(DownloadHelper h, boolean isLive) {
+            public void onPrepared(DownloadHelper h, boolean tracksInfoAvailable) {
                 try {
-                    if(isLive) { result.complete("Live streams cannot be saved as an offline movie."); return; }
                     int height=source.optInt("max_height",1080);
                     TrackSelectionParameters params=new TrackSelectionParameters.Builder(c)
                             .setMaxVideoSize(Integer.MAX_VALUE,height>0?height:1080).build();
-                    for(int period=0;period<h.getPeriodCount();period++) {
-                        h.clearTrackSelections(period);
-                        h.addTrackSelection(period,params);
+                    if(tracksInfoAvailable) {
+                        for(int period=0;period<h.getPeriodCount();period++) {
+                            h.clearTrackSelections(period);
+                            h.addTrackSelection(period,params);
+                        }
                     }
                     JSONObject metadata=Engine.json("title",title,"source",source);
                     DownloadRequest req=h.getDownloadRequest(id,metadata.toString().getBytes(StandardCharsets.UTF_8));
                     DownloadService.sendAddDownload(c,OfflineService.class,req,false);
                     result.complete(null);
-                } catch(Exception e) { result.complete(e.getMessage()); }
+                } catch(Exception e) { result.complete(e.getMessage()!=null?e.getMessage():e.getClass().getSimpleName()); }
                 finally { h.release(); }
             }
             public void onPrepareError(DownloadHelper h, IOException e) { h.release();result.complete("Cannot prepare download: "+e.getMessage()); }
