@@ -82,10 +82,13 @@ final class MediaSmoke {
             test.runOnMainSync(()->{
                 screen.player.pause();screen.player.setPlaybackSpeed(1.5f);
                 if(screen.player.getPlaybackParameters().speed!=1.5f)throw new AssertionError("Playback speed was not applied");
+                if(screen.getRequestedOrientation()!=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR)throw new AssertionError("Player does not default to automatic rotation");
                 screen.setLocked(true);
                 if(screen.view.getUseController()||screen.unlock.getVisibility()!=android.view.View.VISIBLE)throw new AssertionError("Lock controls failed");
+                if(screen.getRequestedOrientation()!=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED)throw new AssertionError("Lock must freeze orientation");
                 screen.setLocked(false);
                 if(!screen.view.getUseController())throw new AssertionError("Unlock controls failed");
+                if(screen.getRequestedOrientation()!=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR)throw new AssertionError("Unlock must restore automatic rotation");
                 screen.view.hideController();
             });
             test.waitForIdleSync();Thread.sleep(700);
@@ -103,9 +106,18 @@ final class MediaSmoke {
             int pixel=screenshot.getPixel(screenshot.getWidth()/2,screenshot.getHeight()/8);
             if(android.graphics.Color.red(pixel)>5||android.graphics.Color.green(pixel)>5||android.graphics.Color.blue(pixel)>5)throw new AssertionError("Unused player area is not black: "+Integer.toHexString(pixel));
             screenshot.recycle();
+            ExoPlayer original=screen.player;long before=original.getCurrentPosition();
+            try {
+                if(!test.getUiAutomation().setRotation(android.app.UiAutomation.ROTATION_FREEZE_90))throw new AssertionError("Emulator rotation failed");
+                Thread.sleep(1800);test.waitForIdleSync();
+                test.runOnMainSync(()->{
+                    if(screen.getResources().getConfiguration().orientation!=android.content.res.Configuration.ORIENTATION_LANDSCAPE)throw new AssertionError("Player did not rotate to landscape");
+                    if(screen.player!=original||Math.abs(screen.player.getCurrentPosition()-before)>500)throw new AssertionError("Rotation restarted playback");
+                });
+            } finally {test.getUiAutomation().setRotation(android.app.UiAutomation.ROTATION_UNFREEZE);}
         } finally {test.runOnMainSync(screen::finish);test.waitForIdleSync();}
     }
-    private static void play(Instrumentation test,Activity activity,JSONObject source,MediaItem item,boolean offline)throws Exception{
+    static void play(Instrumentation test,Activity activity,JSONObject source,MediaItem item,boolean offline)throws Exception{
         CountDownLatch ready=new CountDownLatch(1);AtomicReference<String> error=new AtomicReference<>();ExoPlayer[] holder=new ExoPlayer[1];
         test.runOnMainSync(()->{
             PlayerView view=new PlayerView(activity);activity.setContentView(view);

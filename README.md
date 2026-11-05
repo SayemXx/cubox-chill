@@ -10,6 +10,8 @@ Developer: **Sayem**. Independent native Android client using the real MovieBox-
 - Black-and-red cinema theme with featured artwork, horizontal poster rows, movie/series filters and bottom navigation.
 - Integrated Media3 player with pure-black unused video space and loading shutter; Fit, stretched Fill and cropped Zoom modes.
 - Playback speed (0.25–2×), audio/subtitle track selection, subtitle size, 10-second seek and double-tap gestures, saved playback position, rotation, control lock, repeat and picture-in-picture on supported devices.
+- Automatic sensor rotation by default, with portrait/landscape modes under Player controls → Screen rotation. Control lock freezes orientation; unlocking restores the selected mode.
+- MovieBox-TUI v0.1.29 includes the upstream MovieBox series request-header fix.
 - Media3 offline download queue with persistent progress, pause/resume, retry, removal and offline playback. Direct files, HLS and DASH use the same library.
 - Daily-on-open and manual upstream release checks, plus optional checks for the app's own GitHub APK releases.
 
@@ -34,7 +36,9 @@ The terminal self-updater cannot safely replace a library embedded in an Android
 1. **Upstream engine release:** the app checks `mesamirh/MovieBox-Tui/releases/latest`, compares numeric versions and shows release notes when a newer engine exists.
 2. **cubox chill release:** Sayem integrates and tests an engine revision, increments the APK version, signs it with the same private signing key and publishes an APK to the app repository's GitHub Releases. Users can then use Updates → Check cubox chill updates → Download APK, followed by Android's installation confirmation.
 
-The default app release repository is `SayemXx/cubox-chill`. Change it in the app under Updates, or compile with `-PupdateRepository=OWNER/REPOSITORY`. A stable signing key must be established before public APK updates can be distributed. Debug APKs are for testing; CI debug signing keys are ephemeral and are not an upgrade channel. Source uploads do not by themselves create an APK release.
+The default app release repository is `SayemXx/cubox-chill`. Change it in the app under Updates, or compile with `-PupdateRepository=OWNER/REPOSITORY`. Users tap **Check cubox chill updates → Download APK**, open the downloaded file, and confirm **Update** in Android. Do not uninstall first. An upstream-engine notice also offers **Check app update**; if a new engine has not yet been packaged, users must wait for the next APK release.
+
+Published APK updates must retain the signing key used for the previous install. The locally signed development APKs use the same local key. Debug APKs are for testing; CI debug signing keys are ephemeral and are not an upgrade channel. Source uploads do not by themselves create an APK release. Keep the signing key private and backed up; establish a production release process before Play Store distribution.
 
 The included `upstream-watch.yml` records the latest upstream release daily for developer review. It does not automatically trust new source, publish a release, or claim that an upstream binary can update the mobile engine. `android.yml` builds and tests APK artifacts after source changes. Keep public release signing credentials in repository secrets, never in source control.
 

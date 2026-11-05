@@ -6,10 +6,10 @@ android {
         applicationId = "app.moviebox.mobile"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
-        buildConfigField("String", "ENGINE_VERSION", "\"0.1.28\"")
-        buildConfigField("String", "ENGINE_COMMIT", "\"b89065d865f84ab44ee8e76ea278f2c6b4596b9a\"")
+        versionCode = 4
+        versionName = "0.4.0"
+        buildConfigField("String", "ENGINE_VERSION", "\"0.1.29\"")
+        buildConfigField("String", "ENGINE_COMMIT", "\"5fd687e46e165723755e6550aa4c107367d72545\"")
         buildConfigField("String", "UPDATE_REPOSITORY", "\"${providers.gradleProperty("updateRepository").getOrElse("SayemXx/cubox-chill")}\"")
         testInstrumentationRunner = "app.moviebox.mobile.SmokeInstrumentation"
     }
