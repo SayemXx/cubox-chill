@@ -44,6 +44,7 @@ final class MediaSmoke {
         String id="cubox-test-"+System.currentTimeMillis();
         try {
             play(test,activity,source,null,false);
+            verifyPlayerScreen(test,activity,source);
             CountDownLatch complete=new CountDownLatch(1);AtomicReference<String> error=new AtomicReference<>();
             DownloadManager.Listener listener=new DownloadManager.Listener(){@Override public void onDownloadChanged(DownloadManager manager,Download download,Exception finalException){if(!id.equals(download.request.id))return;if(download.state==Download.STATE_COMPLETED)complete.countDown();if(download.state==Download.STATE_FAILED){error.set("Download failed: "+finalException);complete.countDown();}}};
             test.runOnMainSync(()->{
@@ -64,6 +65,45 @@ final class MediaSmoke {
             server.close();
             test.runOnMainSync(()->{Offline.manager.removeDownload(id);Offline.manager.setRequirements(new androidx.media3.exoplayer.scheduler.Requirements(androidx.media3.exoplayer.scheduler.Requirements.NETWORK));});
         }
+    }
+    private static void verifyPlayerScreen(Instrumentation test,Activity parent,JSONObject source)throws Exception {
+        PlayerActivity screen=(PlayerActivity)test.startActivitySync(new android.content.Intent(parent,PlayerActivity.class)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("source",source.toString())
+                .putExtra("title","Player verification").putExtra("key","player-ui-test"));
+        CountDownLatch frame=new CountDownLatch(1);AtomicReference<String> error=new AtomicReference<>();
+        test.runOnMainSync(()->{
+            screen.player.addListener(new Player.Listener(){@Override public void onRenderedFirstFrame(){frame.countDown();}@Override public void onPlayerError(PlaybackException e){error.set(e.getErrorCodeName());frame.countDown();}});
+            screen.view.setResizeMode(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT);
+            screen.player.seekTo(0);screen.player.play();
+        });
+        try {
+            if(!frame.await(30,TimeUnit.SECONDS))throw new AssertionError("Player screen did not render a frame");
+            if(error.get()!=null)throw new AssertionError(error.get());
+            test.runOnMainSync(()->{
+                screen.player.pause();screen.player.setPlaybackSpeed(1.5f);
+                if(screen.player.getPlaybackParameters().speed!=1.5f)throw new AssertionError("Playback speed was not applied");
+                screen.setLocked(true);
+                if(screen.view.getUseController()||screen.unlock.getVisibility()!=android.view.View.VISIBLE)throw new AssertionError("Lock controls failed");
+                screen.setLocked(false);
+                if(!screen.view.getUseController())throw new AssertionError("Unlock controls failed");
+                screen.view.hideController();
+            });
+            test.waitForIdleSync();Thread.sleep(700);
+            // Dismiss Android's first-use fullscreen education, which is outside the app's window.
+            android.view.accessibility.AccessibilityNodeInfo active=test.getUiAutomation().getRootInActiveWindow();
+            if(active!=null){
+                for(android.view.accessibility.AccessibilityNodeInfo node:active.findAccessibilityNodeInfosByText("Got it")){
+                    if("com.android.systemui".contentEquals(node.getPackageName()))node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK);
+                }
+            }
+            Thread.sleep(700);test.runOnMainSync(()->screen.view.hideController());test.waitForIdleSync();Thread.sleep(300);
+            android.graphics.Bitmap screenshot=test.getUiAutomation().takeScreenshot();
+            if(screenshot==null)throw new AssertionError("Player screenshot unavailable");
+            try(FileOutputStream file=new FileOutputStream(new File(parent.getExternalFilesDir(null),"player-black-bars.png"))){screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG,100,file);}
+            int pixel=screenshot.getPixel(screenshot.getWidth()/2,screenshot.getHeight()/8);
+            if(android.graphics.Color.red(pixel)>5||android.graphics.Color.green(pixel)>5||android.graphics.Color.blue(pixel)>5)throw new AssertionError("Unused player area is not black: "+Integer.toHexString(pixel));
+            screenshot.recycle();
+        } finally {test.runOnMainSync(screen::finish);test.waitForIdleSync();}
     }
     private static void play(Instrumentation test,Activity activity,JSONObject source,MediaItem item,boolean offline)throws Exception{
         CountDownLatch ready=new CountDownLatch(1);AtomicReference<String> error=new AtomicReference<>();ExoPlayer[] holder=new ExoPlayer[1];

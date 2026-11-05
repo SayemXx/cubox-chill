@@ -7,7 +7,9 @@ Developer: **Sayem**. Independent native Android client using the real MovieBox-
 - MovieBox, 4KHDHub, Dramachi, CircleFTP and DhakaFlix search.
 - Movie details, series seasons/episodes, audio editions where upstream supplies them.
 - Selection of quality and individual server/mirror; upstream resolution for 4KHDHub links.
-- Integrated Media3 playback, external subtitle selection, seek and saved playback position.
+- Black-and-red cinema theme with featured artwork, horizontal poster rows, movie/series filters and bottom navigation.
+- Integrated Media3 player with pure-black unused video space and loading shutter; Fit, stretched Fill and cropped Zoom modes.
+- Playback speed (0.25–2×), audio/subtitle track selection, subtitle size, 10-second seek and double-tap gestures, saved playback position, rotation, control lock, repeat and picture-in-picture on supported devices.
 - Media3 offline download queue with persistent progress, pause/resume, retry, removal and offline playback. Direct files, HLS and DASH use the same library.
 - Daily-on-open and manual upstream release checks, plus optional checks for the app's own GitHub APK releases.
 
@@ -44,7 +46,7 @@ Offline media and download metadata live in app-private storage. Removing the ap
 
 ## Scope
 
-The five built-in movie/series providers are connected. Stremio add-on configuration, live-TV playlists, casting, whole-season one-click downloads and a VLC decoder fallback are not included in this first version. Media3 uses device codecs, so format support differs from desktop VLC. External subtitle support depends on the source format.
+The five built-in movie/series providers are connected. Stremio add-on configuration, live-TV playlists, casting, whole-season one-click downloads and a VLC decoder fallback are not included. The controls are inspired by full-featured players, but playback uses Media3 and device codecs, so format support differs from desktop VLC. Subtitle support depends on the source format.
 
 ## Credits and licensing
 

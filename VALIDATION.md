@@ -1,16 +1,16 @@
-# Validation — cubox chill 0.1.0
+# Validation — cubox chill 0.3.0
 
-Validated on November 5, 2026. Developer: **Sayem**.
+Validated on November 6, 2026. Developer: **Sayem**.
 
 ## Build and packaging
 
-- ARM64 and x86_64 Rust engine release builds: passed locally and in GitHub Actions.
+- ARM64 and x86_64 Rust engine release builds: reused unchanged from the previously validated engine build.
 - Android application and instrumentation-test APK builds: passed.
 - Unit tests for version comparisons, malformed release tags and repository names: **3 passed, 0 failed**.
-- Android lint: **0 errors**, 12 non-blocking warnings.
+- Android lint: **0 errors**, 15 non-blocking warnings.
 - APK signature: verified, APK Signature Scheme v2.
 - Native-library and ZIP alignment: checked for 16 KB page support.
-- App label: `cubox chill`; package: `app.moviebox.mobile`; version: `0.1.0` (code 1).
+- App label: `cubox chill`; package: `app.moviebox.mobile`; version: `0.3.0` (code 3).
 - Minimum Android API: 26 (Android 8.0); ABIs: `arm64-v8a`, `x86_64`.
 
 ## Installed-device checks
@@ -22,14 +22,18 @@ The final app and test APKs were installed successfully on an isolated x86_64 An
 - ExoPlayer initializes and releases.
 - Persistent download database and cache initialize.
 - A video requiring a custom HTTP header renders its first frame.
+- The actual player activity renders video; a screenshot pixel check confirms unused video space is black. The screenshot was also inspected visually after dismissing Android's first-use fullscreen tutorial.
+- Playback speed and control lock/unlock pass device assertions.
 - The complete test video downloads; downloaded byte count matches the source.
 - The downloaded video renders after its source HTTP server is closed, proving cache-only playback.
 
 The loopback fixture test disables public-internet validation only during the test; normal app download requirements are restored afterward. An initial test exposed a direct-file preparation bug; it was corrected before the final APK was packaged. A separate test interruption was confirmed by Android as a low-memory termination on the emulator.
 
-## Live-provider limitation
+## Live-provider checks and limits
 
-The MovieBox live search probe returned `MovieBox unavailable: All hosts exhausted` from the emulator. This is not recorded as a successful live-provider test. The app embeds the actual upstream provider implementation, but availability of MovieBox, 4KHDHub, Dramachi and the BDIX servers depends on the provider and network. Every live server, subtitle format, codec, and adaptive stream has not been tested.
+The final MovieBox live search probe returned **10 results** from the emulator. Earlier attempts reported all hosts exhausted, demonstrating that availability can vary. The app embeds the actual upstream provider implementation, but availability of MovieBox, 4KHDHub, Dramachi and the BDIX servers depends on the provider and network. This search result does not prove playback from every live server. Every subtitle format, codec, adaptive stream, audio-track combination and picture-in-picture device has not been tested.
+
+The black/red Downloads screen and actual player's black unused area were visually inspected. Live artwork layouts were not exhaustively reviewed across all providers. The player uses Media3, not LibVLC.
 
 ## Distribution
 

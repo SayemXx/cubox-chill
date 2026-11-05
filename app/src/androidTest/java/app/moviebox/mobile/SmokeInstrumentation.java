@@ -35,7 +35,7 @@ public class SmokeInstrumentation extends Instrumentation {
             runOnMainSync(()->{if(Offline.manager==null||Offline.cache==null)throw new AssertionError("Offline manager missing");});
             out.putString("offline","PASS: persistent download database/cache initialize");
             MediaSmoke.run(this,activity);
-            out.putString("media_pipeline","PASS: authenticated video renders; full download completes; cached video renders with server closed");
+            out.putString("media_pipeline","PASS: authenticated video renders; player screen renders with black unused area; speed and lock/unlock work; full download completes; cached video renders with server closed");
             try{
                 Object data=Engine.request(context,Engine.json("op","search","provider","moviebox","query","Big Buck Bunny","page",1));
                 if(!(data instanceof JSONArray))throw new AssertionError("Search returned wrong type");
