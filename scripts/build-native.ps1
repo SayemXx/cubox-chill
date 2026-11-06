@@ -1,11 +1,12 @@
-param([string]$Ndk = $env:ANDROID_NDK_HOME, [string[]]$Targets = @('aarch64-linux-android','x86_64-linux-android'))
+param([string]$Ndk = $env:ANDROID_NDK_HOME, [string[]]$Targets = @('aarch64-linux-android','armv7-linux-androideabi','x86_64-linux-android'))
 $ErrorActionPreference='Stop'
 if (-not $Ndk) { throw 'Set ANDROID_NDK_HOME or pass -Ndk pointing to Android NDK r28 or newer.' }
 $projectRoot = Split-Path $PSScriptRoot -Parent
 $bin = Join-Path $Ndk 'toolchains/llvm/prebuilt/windows-x86_64/bin'
 foreach ($target in $Targets) {
-    $abi = if ($target -eq 'aarch64-linux-android') {'arm64-v8a'} elseif ($target -eq 'x86_64-linux-android') {'x86_64'} else {throw "Unsupported target $target"}
-    $linker = Join-Path $bin "$($target)26-clang.cmd"
+    $abi = if ($target -eq 'aarch64-linux-android') {'arm64-v8a'} elseif ($target -eq 'armv7-linux-androideabi') {'armeabi-v7a'} elseif ($target -eq 'x86_64-linux-android') {'x86_64'} else {throw "Unsupported target $target"}
+    $clangTarget = if ($target -eq 'armv7-linux-androideabi') {'armv7a-linux-androideabi'} else {$target}
+    $linker = Join-Path $bin "$($clangTarget)26-clang.cmd"
     $targetKey=$target.Replace('-','_')
     [Environment]::SetEnvironmentVariable("CARGO_TARGET_$($targetKey.ToUpper())_LINKER",$linker,'Process')
     [Environment]::SetEnvironmentVariable("CC_$targetKey",$linker,'Process')
