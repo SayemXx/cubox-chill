@@ -29,7 +29,7 @@ Requires JDK 21, Android SDK platform 36.1, Gradle 9.5.0, Rust stable (1.90+), a
 2. Run `scripts/build-native.ps1` on Windows, or `bash scripts/build-native.sh` on Linux.
 3. Run `python scripts/collect-licenses.py` to bundle the Rust dependency notices.
 4. Run `gradle :app:assembleDebug :app:testDebugUnitTest :app:lintDebug`.
-5. Install `app/build/outputs/apk/debug/app-debug.apk` on an Android 8+ ARM64 device (or x86_64 emulator).
+5. Install `app/build/outputs/apk/debug/app-debug.apk` on an Android 8+ ARMv7 (32-bit), ARM64 device, or x86_64 emulator.
 
 Both Rust and Android dependencies are downloaded by their standard package managers. The provider source is vendored for reproducibility; `native/Cargo.lock` pins transitive Rust dependencies. The app is Java with native Android views and a JSON JNI bridge, not a web wrapper. `native/src/lib.rs` connects directly to the upstream library.
 
@@ -66,3 +66,5 @@ The five built-in movie/series providers are connected. Stremio add-on configura
 - This application is independent and is not endorsed by MovieBox-TUI or VideoLAN.
 
 See `VALIDATION.md` for the checks actually performed on the delivered build.
+
+Version 0.4.2 adds armeabi-v7a while preserving ARM64 and x86_64. The 32-bit native build and ELF packaging were verified; physical 32-bit device playback has not been tested.
