@@ -126,6 +126,12 @@ final class MediaSmoke {
                     int max=screen.audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
                     try{screen.setVolume(max/4);swipe(screen.view,.75f);if(screen.audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)<=max/4)throw new AssertionError("Right swipe did not increase volume");}
                     finally{screen.audio.setStreamVolume(android.media.AudioManager.STREAM_MUSIC,previous,0);}
+                    screen.player.seekTo(0);horizontalSwipe(screen.view,.3f,.6f,false);
+                    if(screen.player.getCurrentPosition()<=0)throw new AssertionError("Right slide did not seek forward");
+                    long afterForward=screen.player.getCurrentPosition();horizontalSwipe(screen.view,.6f,.3f,true);
+                    if(screen.player.getCurrentPosition()!=afterForward)throw new AssertionError("Cancelled slide changed position");
+                    horizontalSwipe(screen.view,.6f,.3f,false);
+                    if(screen.player.getCurrentPosition()>=afterForward)throw new AssertionError("Left slide did not seek backward");
                     long t=android.os.SystemClock.uptimeMillis();screen.tapVideo(true,t);screen.tapVideo(true,t+80);screen.tapVideo(true,t+160);screen.tapVideo(true,t+240);
                     if(!screen.gestureHud.getText().toString().contains("30 seconds"))throw new AssertionError("Repeated tap feedback incorrect");
                 });
@@ -136,6 +142,10 @@ final class MediaSmoke {
         long time=android.os.SystemClock.uptimeMillis();float x=view.getWidth()*side;
         int[] actions={android.view.MotionEvent.ACTION_DOWN,android.view.MotionEvent.ACTION_MOVE,android.view.MotionEvent.ACTION_UP};
         for(int i=0;i<actions.length;i++){android.view.MotionEvent event=android.view.MotionEvent.obtain(time,time+i*40,actions[i],x,view.getHeight()*(i==0?.8f:.3f),0);view.dispatchTouchEvent(event);event.recycle();}
+    }
+    private static void horizontalSwipe(android.view.View view,float from,float to,boolean cancel){
+        long time=android.os.SystemClock.uptimeMillis();int[] actions={android.view.MotionEvent.ACTION_DOWN,android.view.MotionEvent.ACTION_MOVE,cancel?android.view.MotionEvent.ACTION_CANCEL:android.view.MotionEvent.ACTION_UP};
+        for(int i=0;i<actions.length;i++){android.view.MotionEvent event=android.view.MotionEvent.obtain(time,time+i*50,actions[i],view.getWidth()*(i==0?from:to),view.getHeight()*.35f,0);view.dispatchTouchEvent(event);event.recycle();}
     }
     static void play(Instrumentation test,Activity activity,JSONObject source,MediaItem item,boolean offline)throws Exception{
         CountDownLatch ready=new CountDownLatch(1);AtomicReference<String> error=new AtomicReference<>();ExoPlayer[] holder=new ExoPlayer[1];

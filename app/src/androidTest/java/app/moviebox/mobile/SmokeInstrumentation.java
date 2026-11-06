@@ -28,6 +28,8 @@ public class SmokeInstrumentation extends Instrumentation {
             waitForIdleSync();
             if(activity==null)throw new AssertionError("Main activity did not start");
             out.putString("activity","PASS: downloads screen opens");
+            CatalogUpdateSmoke.run(this,(MainActivity)activity);
+            out.putString("catalog_updates","PASS: persisted catalog renders on reopening; freshness and query isolation; new-version and same-version APK buttons available");
             CountDownLatch playerDone=new CountDownLatch(1);
             runOnMainSync(()->{ExoPlayer player=new ExoPlayer.Builder(context).build();player.release();playerDone.countDown();});
             if(!playerDone.await(10,TimeUnit.SECONDS))throw new AssertionError("Player initialization timeout");

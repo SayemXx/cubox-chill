@@ -1,43 +1,41 @@
-# Validation — cubox & chill 0.4.0
+# Validation — cubox & chill 0.4.1
 
-Validated on November 6, 2026. Developer: **Sayem**.
+Validated November 6, 2026. Developer: Sayem.
 
-## Build and packaging
+## Changes
 
-- MovieBox-TUI engine upgraded to v0.1.29, commit 5fd687e46e165723755e6550aa4c107367d72545, including the upstream series request-header fix.
-- ARM64 and x86_64 engine binaries came from successful GitHub Actions run 42103631672 for commit a29fb1049892c5094dc0090c4b98a15d76d1bf16. The native source was unchanged by the subsequent UI/cache changes. Local ARM64 compilation also passed; the redundant local x86_64 compilation was stopped after the CI build succeeded.
-- Final application and instrumentation APKs built locally with the existing local signing key.
-- Unit tests: **7 passed, 0 failed**. Coverage: version/repository validation, repeated-tap seek accumulation/reset, artwork persistence, expiry and bounded least-recently-used eviction.
-- Final Android lint: **0 errors**, 16 warnings.
-- APK signature and 16 KB ZIP alignment verified. Signing certificate matches the previously supplied v0.3.0 APK.
-- Label: `cubox & chill`; package: `app.moviebox.mobile`; version 0.4.0 (code 4).
-- Minimum Android 8.0 (API 26); ABIs: arm64-v8a and x86_64.
+- Horizontal player swipes preview a target and seek on release: right forwards, left backwards. A full-screen-width drag represents 120 seconds and the target is clamped to the media bounds. Cancelled swipes do not seek. Existing vertical brightness/volume gestures remain separate.
+- Home and first-page search catalogs persist in a bounded 4 MB metadata store, including Find your next series. Saved entries are reused for six hours, then retained on screen during background refresh. Refresh titles bypasses the freshness window. Playback links are not cached in this store. The existing 64 MB artwork disk cache remains in use.
+- Updates offers Check / download app update. A newer release offers Download update; a matching version offers Download APK again. A Release page link is also provided.
+- Version increased to 0.4.1 / code 5. Package remains app.moviebox.mobile and label remains cubox & chill.
 
-## Device checks
+## Build and artifact verification
 
-The APK installed as an update over the previous app in an isolated x86_64 emulator. Final instrumentation run passed:
+- Application APK, instrumentation APK and unit tests built successfully.
+- Nine unit tests passed, zero failures: version/repository validation, tap bursts, horizontal seek direction/bounds, artwork persistence/expiry/eviction.
+- Android lint: zero errors, 17 warnings.
+- APK Signature Scheme v2 verified. Certificate SHA-256 matches v0.4.0:
+  3eded4b6d33c88be5bb45cbe16f41cf203554f4f30d141220a3952b83886e1c0
+- 16 KB ZIP alignment checked. ARM64 and x86_64 included; minimum Android API 26.
+- MovieBox-TUI engine remains v0.1.29, unchanged from the validated v0.4.0 engine binaries.
 
-- Native engine initializes and JNI errors propagate.
-- Downloads screen, persistent download database/cache and ExoPlayer initialize.
-- Authenticated test video renders; complete download byte count matches; cached video renders with its HTTP server closed.
-- Actual player screen has black unused video space, verified by screenshot pixel check.
-- Playback speed, single-tap controls and control lock/unlock work.
-- Auto rotation is the default requested sensor mode; locking freezes orientation and unlocking restores it.
-- Switching to landscape preserves the player instance and paused playback position. The test uses the player's landscape option because Android's user-rotation lock is intentionally ignored by full-sensor mode. Physical rotation behavior should also be checked on users' devices.
-- Left-side brightness and right-side volume swipes increase their respective values; test media volume is restored afterward.
-- Four quick taps produce the +30 seconds feedback. Unit tests cover 2/3/4/5-tap accumulation and reset after a pause or side change.
-- Simultaneous poster views generate exactly one HTTP image request. After clearing the memory cache and closing the image server, another view loads the same poster from disk.
-- MovieBox live search returned 10 results.
-- **Black Torch [Hindi] S1E1 resolved an episode stream and rendered its first frame.** This confirms the previously reported series case on the test network, not every episode/provider/server.
+## Installed-device checks
 
-Earlier test iterations encountered an emulator playback timeout and test-harness issues involving controller animations and orientation overrides. These were investigated; the final installed build passed the complete run.
+Installed as an update in an isolated x86_64 emulator. Final complete instrumentation run passed:
 
-## Cache and performance scope
+- Saved metadata is readable from a new CatalogStore instance and renders in the home UI after the in-memory catalog is cleared; freshness and query isolation are checked.
+- Newer-version and matching-version dialogs both expose the expected APK download buttons.
+- Horizontal swipes move playback forward and backward; cancellation leaves the position unchanged.
+- Existing first-frame rendering, black unused video area, playback speed, rotation without restarting the player, brightness/volume swipes, repeated-tap feedback and control locking pass.
+- Full fixture download matches source bytes; offline playback works after its source server is closed.
+- Simultaneous artwork requests share one download; artwork loads from disk with memory cache cleared and the image server closed.
+- Native engine, download database and player initialization pass.
+- MovieBox search returns 10 results; Black Torch [Hindi] S1E1 resolves and renders its first frame.
 
-Artwork uses a 12 MB memory cache plus a 64 MB disk cache with 30-day expiry, request sharing and background decoding. Android may reclaim cache storage. First loads, expired/evicted artwork and live streams still require network access. No promise of zero buffering or zero loading on all devices/networks is made.
+The first run timed out in the live-series playback check after all local and new-feature checks passed. A complete retry passed without source changes. Provider/network availability and emulator load can vary; this does not establish compatibility with every live stream, codec or device.
 
-## Distribution
+## Installation
 
-This is a signed development APK, not a Play Store release. Install without uninstalling to retain app-private downloads and settings. Future APKs must use the same signing key and a higher version code. Unmodified CI debug APKs use a different ephemeral key and are not the update artifact.
+Signed development build. Install over the existing app without uninstalling to preserve settings and downloaded media. The release APK uses the same local signing key as v0.4.0; ephemeral CI debug APKs are not compatible update artifacts.
 
-The default update repository remains `SayemXx/cubox-chill`. Publishing the APK to GitHub Releases makes it discoverable through the existing app's update button. Upstream engine releases still require integration into a new app APK.
+The first successful catalog load needs data. Later openings reuse saved metadata; artwork that is missing, expired or evicted still needs downloading. Live video still requires network access unless downloaded for offline playback.

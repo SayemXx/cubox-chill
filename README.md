@@ -12,6 +12,8 @@ Developer: **Sayem**. Independent native Android client using the real MovieBox-
 - Playback speed (0.25–2×), audio/subtitle track selection, subtitle size, 10-second seek and double-tap gestures, saved playback position, rotation, control lock, repeat and picture-in-picture on supported devices.
 - Automatic sensor rotation by default, with portrait/landscape modes under Player controls → Screen rotation. Control lock freezes orientation; unlocking restores the selected mode.
 - Swipe vertically on the left side of the player for window brightness, or on the right for media volume. Quick repeated taps on the left/right seek backward/forward: 2 taps = 10 seconds, 3 = 20, 4 = 30, with animated on-screen feedback.
+- Slide horizontally in the player to preview a playback position, then release to seek. Right goes forward and left goes backward; a full-screen-width drag represents 120 seconds, clamped to the video's boundaries. Cancelling the gesture leaves playback position unchanged.
+- Home and first-page search catalogs persist in a bounded 4 MB metadata cache, including the “Find your next series” row. Reopening uses saved titles without a network fetch for six hours; older saved titles stay visible during refresh. Use **Refresh titles** to request an update immediately. Stream URLs are always resolved fresh.
 - Posters and banners use a 12 MB memory cache and a bounded 64 MB disk cache. Disk artwork survives app restarts, expires after 30 days, and evicts least-recently-used images when full. Simultaneous views share one image request; decoding and disk/network work stay off the UI thread. Android may reclaim cached files under storage pressure. First loads, expired/evicted artwork and live streams still require network access.
 - MovieBox-TUI v0.1.29 includes the upstream MovieBox series request-header fix.
 - Media3 offline download queue with persistent progress, pause/resume, retry, removal and offline playback. Direct files, HLS and DASH use the same library.
@@ -39,6 +41,8 @@ The terminal self-updater cannot safely replace a library embedded in an Android
 2. **cubox & chill release:** Sayem integrates and tests an engine revision, increments the APK version, signs it with the same private signing key and publishes an APK to the app repository's GitHub Releases. Users can then use Updates → Check cubox & chill updates → Download APK, followed by Android's installation confirmation.
 
 The default app release repository is `SayemXx/cubox-chill`. Change it in the app under Updates, or compile with `-PupdateRepository=OWNER/REPOSITORY`. Users tap **Check cubox & chill updates → Download APK**, open the downloaded file, and confirm **Update** in Android. Do not uninstall first. An upstream-engine notice also offers **Check app update**; if a new engine has not yet been packaged, users must wait for the next APK release.
+
+In v0.4.1, the Updates screen offers **Check / download app update**. A newer release shows **Download update**; a matching version still offers **Download APK again** and **Release page**, so reinstalling the published build remains possible.
 
 Published APK updates must retain the signing key used for the previous install. The locally signed development APKs use the same local key. Debug APKs are for testing; CI debug signing keys are ephemeral and are not an upgrade channel. Source uploads do not by themselves create an APK release. Keep the signing key private and backed up; establish a production release process before Play Store distribution.
 
