@@ -1,4 +1,4 @@
-# cubox chill
+# cubox & chill
 
 Developer: **Sayem**. Independent native Android client using the real MovieBox-TUI Rust provider engine. No Termux, server, or separate player installation is required.
 
@@ -11,6 +11,8 @@ Developer: **Sayem**. Independent native Android client using the real MovieBox-
 - Integrated Media3 player with pure-black unused video space and loading shutter; Fit, stretched Fill and cropped Zoom modes.
 - Playback speed (0.25–2×), audio/subtitle track selection, subtitle size, 10-second seek and double-tap gestures, saved playback position, rotation, control lock, repeat and picture-in-picture on supported devices.
 - Automatic sensor rotation by default, with portrait/landscape modes under Player controls → Screen rotation. Control lock freezes orientation; unlocking restores the selected mode.
+- Swipe vertically on the left side of the player for window brightness, or on the right for media volume. Quick repeated taps on the left/right seek backward/forward: 2 taps = 10 seconds, 3 = 20, 4 = 30, with animated on-screen feedback.
+- Posters and banners use a 12 MB memory cache and a bounded 64 MB disk cache. Disk artwork survives app restarts, expires after 30 days, and evicts least-recently-used images when full. Simultaneous views share one image request; decoding and disk/network work stay off the UI thread. Android may reclaim cached files under storage pressure. First loads, expired/evicted artwork and live streams still require network access.
 - MovieBox-TUI v0.1.29 includes the upstream MovieBox series request-header fix.
 - Media3 offline download queue with persistent progress, pause/resume, retry, removal and offline playback. Direct files, HLS and DASH use the same library.
 - Daily-on-open and manual upstream release checks, plus optional checks for the app's own GitHub APK releases.
@@ -34,9 +36,9 @@ Both Rust and Android dependencies are downloaded by their standard package mana
 The terminal self-updater cannot safely replace a library embedded in an Android APK. Updates therefore have two explicit layers:
 
 1. **Upstream engine release:** the app checks `mesamirh/MovieBox-Tui/releases/latest`, compares numeric versions and shows release notes when a newer engine exists.
-2. **cubox chill release:** Sayem integrates and tests an engine revision, increments the APK version, signs it with the same private signing key and publishes an APK to the app repository's GitHub Releases. Users can then use Updates → Check cubox chill updates → Download APK, followed by Android's installation confirmation.
+2. **cubox & chill release:** Sayem integrates and tests an engine revision, increments the APK version, signs it with the same private signing key and publishes an APK to the app repository's GitHub Releases. Users can then use Updates → Check cubox & chill updates → Download APK, followed by Android's installation confirmation.
 
-The default app release repository is `SayemXx/cubox-chill`. Change it in the app under Updates, or compile with `-PupdateRepository=OWNER/REPOSITORY`. Users tap **Check cubox chill updates → Download APK**, open the downloaded file, and confirm **Update** in Android. Do not uninstall first. An upstream-engine notice also offers **Check app update**; if a new engine has not yet been packaged, users must wait for the next APK release.
+The default app release repository is `SayemXx/cubox-chill`. Change it in the app under Updates, or compile with `-PupdateRepository=OWNER/REPOSITORY`. Users tap **Check cubox & chill updates → Download APK**, open the downloaded file, and confirm **Update** in Android. Do not uninstall first. An upstream-engine notice also offers **Check app update**; if a new engine has not yet been packaged, users must wait for the next APK release.
 
 Published APK updates must retain the signing key used for the previous install. The locally signed development APKs use the same local key. Debug APKs are for testing; CI debug signing keys are ephemeral and are not an upgrade channel. Source uploads do not by themselves create an APK release. Keep the signing key private and backed up; establish a production release process before Play Store distribution.
 
@@ -46,7 +48,7 @@ To integrate an update: inspect release changes, replace the vendored snapshot, 
 
 ## Storage and downloads
 
-Offline media and download metadata live in app-private storage. Removing the app removes the library. Downloads are played within cubox chill, not exported as a single MP4 when a source uses segmented media. An expired link may require selecting the source again. Android may stop long-running data-sync work under system limits; reopen the app and resume as needed.
+Offline media and download metadata live in app-private storage. Removing the app removes the library. Downloads are played within cubox & chill, not exported as a single MP4 when a source uses segmented media. An expired link may require selecting the source again. Android may stop long-running data-sync work under system limits; reopen the app and resume as needed.
 
 ## Scope
 

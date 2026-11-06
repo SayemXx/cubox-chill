@@ -35,7 +35,9 @@ public class SmokeInstrumentation extends Instrumentation {
             runOnMainSync(()->{if(Offline.manager==null||Offline.cache==null)throw new AssertionError("Offline manager missing");});
             out.putString("offline","PASS: persistent download database/cache initialize");
             MediaSmoke.run(this,activity);
-            out.putString("media_pipeline","PASS: authenticated video renders; player screen renders with black unused area; speed, automatic rotation policy and lock/unlock work; full download completes; cached video renders with server closed");
+            out.putString("media_pipeline","PASS: authenticated video renders; black unused area; speed, rotation without restart, volume/brightness swipes, repeated seek feedback and lock/unlock; full download and offline rendering");
+            ArtworkSmoke.run(this,activity);
+            out.putString("artwork_cache","PASS: simultaneous requests share one download; image loads from disk with memory cache cleared and HTTP server closed");
             try{
                 Object data=Engine.request(context,Engine.json("op","search","provider","moviebox","query","Big Buck Bunny","page",1));
                 if(!(data instanceof JSONArray))throw new AssertionError("Search returned wrong type");
@@ -46,6 +48,6 @@ public class SmokeInstrumentation extends Instrumentation {
             runOnMainSync(activity::finish);
             out.putString("stream","cubox chill smoke checks completed\n"+out);
             finish(Activity.RESULT_OK,out);
-        }catch(Throwable error){out.putString("stream","FAIL: "+error);finish(Activity.RESULT_CANCELED,out);}
+        }catch(Throwable error){out.putString("stream","FAIL: "+error+"\nCompleted checks: "+out+"\n"+android.util.Log.getStackTraceString(error));finish(Activity.RESULT_CANCELED,out);}
     }
 }

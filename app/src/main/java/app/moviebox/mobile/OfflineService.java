@@ -14,6 +14,6 @@ public class OfflineService extends DownloadService {
     protected Scheduler getScheduler(){return null;}
     protected Notification getForegroundNotification(List<Download> downloads,int requirements){
         PendingIntent intent=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class).putExtra("downloads",true),PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
-        return new DownloadNotificationHelper(this,"downloads").buildProgressNotification(this,R.drawable.ic_app,intent,"cubox chill • Offline library",downloads,requirements);
+        return new DownloadNotificationHelper(this,"downloads").buildProgressNotification(this,R.drawable.ic_app,intent,"cubox & chill • Offline library",downloads,requirements);
     }
 }

@@ -1,42 +1,43 @@
-# Validation — cubox chill 0.3.0
+# Validation — cubox & chill 0.4.0
 
 Validated on November 6, 2026. Developer: **Sayem**.
 
 ## Build and packaging
 
-- ARM64 and x86_64 Rust engine release builds: reused unchanged from the previously validated engine build.
-- Android application and instrumentation-test APK builds: passed.
-- Unit tests for version comparisons, malformed release tags and repository names: **3 passed, 0 failed**.
-- Android lint: **0 errors**, 15 non-blocking warnings.
-- APK signature: verified, APK Signature Scheme v2.
-- Native-library and ZIP alignment: checked for 16 KB page support.
-- App label: `cubox chill`; package: `app.moviebox.mobile`; version: `0.3.0` (code 3).
-- Minimum Android API: 26 (Android 8.0); ABIs: `arm64-v8a`, `x86_64`.
+- MovieBox-TUI engine upgraded to v0.1.29, commit 5fd687e46e165723755e6550aa4c107367d72545, including the upstream series request-header fix.
+- ARM64 and x86_64 engine binaries came from successful GitHub Actions run 42103631672 for commit a29fb1049892c5094dc0090c4b98a15d76d1bf16. The native source was unchanged by the subsequent UI/cache changes. Local ARM64 compilation also passed; the redundant local x86_64 compilation was stopped after the CI build succeeded.
+- Final application and instrumentation APKs built locally with the existing local signing key.
+- Unit tests: **7 passed, 0 failed**. Coverage: version/repository validation, repeated-tap seek accumulation/reset, artwork persistence, expiry and bounded least-recently-used eviction.
+- Final Android lint: **0 errors**, 16 warnings.
+- APK signature and 16 KB ZIP alignment verified. Signing certificate matches the previously supplied v0.3.0 APK.
+- Label: `cubox & chill`; package: `app.moviebox.mobile`; version 0.4.0 (code 4).
+- Minimum Android 8.0 (API 26); ABIs: arm64-v8a and x86_64.
 
-## Installed-device checks
+## Device checks
 
-The final app and test APKs were installed successfully on an isolated x86_64 Android emulator. Device smoke tests passed:
+The APK installed as an update over the previous app in an isolated x86_64 emulator. Final instrumentation run passed:
 
-- Native library loads; Rust runtime initializes; JNI errors propagate correctly.
-- The app's Downloads screen opens.
-- ExoPlayer initializes and releases.
-- Persistent download database and cache initialize.
-- A video requiring a custom HTTP header renders its first frame.
-- The actual player activity renders video; a screenshot pixel check confirms unused video space is black. The screenshot was also inspected visually after dismissing Android's first-use fullscreen tutorial.
-- Playback speed and control lock/unlock pass device assertions.
-- The complete test video downloads; downloaded byte count matches the source.
-- The downloaded video renders after its source HTTP server is closed, proving cache-only playback.
+- Native engine initializes and JNI errors propagate.
+- Downloads screen, persistent download database/cache and ExoPlayer initialize.
+- Authenticated test video renders; complete download byte count matches; cached video renders with its HTTP server closed.
+- Actual player screen has black unused video space, verified by screenshot pixel check.
+- Playback speed, single-tap controls and control lock/unlock work.
+- Auto rotation is the default requested sensor mode; locking freezes orientation and unlocking restores it.
+- Switching to landscape preserves the player instance and paused playback position. The test uses the player's landscape option because Android's user-rotation lock is intentionally ignored by full-sensor mode. Physical rotation behavior should also be checked on users' devices.
+- Left-side brightness and right-side volume swipes increase their respective values; test media volume is restored afterward.
+- Four quick taps produce the +30 seconds feedback. Unit tests cover 2/3/4/5-tap accumulation and reset after a pause or side change.
+- Simultaneous poster views generate exactly one HTTP image request. After clearing the memory cache and closing the image server, another view loads the same poster from disk.
+- MovieBox live search returned 10 results.
+- **Black Torch [Hindi] S1E1 resolved an episode stream and rendered its first frame.** This confirms the previously reported series case on the test network, not every episode/provider/server.
 
-The loopback fixture test disables public-internet validation only during the test; normal app download requirements are restored afterward. An initial test exposed a direct-file preparation bug; it was corrected before the final APK was packaged. A separate test interruption was confirmed by Android as a low-memory termination on the emulator.
+Earlier test iterations encountered an emulator playback timeout and test-harness issues involving controller animations and orientation overrides. These were investigated; the final installed build passed the complete run.
 
-## Live-provider checks and limits
+## Cache and performance scope
 
-The final MovieBox live search probe returned **10 results** from the emulator. Earlier attempts reported all hosts exhausted, demonstrating that availability can vary. The app embeds the actual upstream provider implementation, but availability of MovieBox, 4KHDHub, Dramachi and the BDIX servers depends on the provider and network. This search result does not prove playback from every live server. Every subtitle format, codec, adaptive stream, audio-track combination and picture-in-picture device has not been tested.
-
-The black/red Downloads screen and actual player's black unused area were visually inspected. Live artwork layouts were not exhaustively reviewed across all providers. The player uses Media3, not LibVLC.
+Artwork uses a 12 MB memory cache plus a 64 MB disk cache with 30-day expiry, request sharing and background decoding. Android may reclaim cache storage. First loads, expired/evicted artwork and live streams still require network access. No promise of zero buffering or zero loading on all devices/networks is made.
 
 ## Distribution
 
-This APK is a signed **debug/development build**, suitable for direct installation and testing. It is not a Play Store release. App update checks point to `SayemXx/cubox-chill`; installation of future APK updates requires a published APK signed with the same key. CI-generated debug keys must not be treated as a stable public upgrade channel.
+This is a signed development APK, not a Play Store release. Install without uninstalling to retain app-private downloads and settings. Future APKs must use the same signing key and a higher version code. Unmodified CI debug APKs use a different ephemeral key and are not the update artifact.
 
-Source for the device tests is in `app/src/androidTest`. The small Big Buck Bunny test fixture and its attribution are packaged only in the test APK, not the application APK.
+The default update repository remains `SayemXx/cubox-chill`. Publishing the APK to GitHub Releases makes it discoverable through the existing app's update button. Upstream engine releases still require integration into a new app APK.

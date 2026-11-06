@@ -80,6 +80,8 @@ final class MediaSmoke {
             if(!frame.await(30,TimeUnit.SECONDS))throw new AssertionError("Player screen did not render a frame");
             if(error.get()!=null)throw new AssertionError(error.get());
             test.runOnMainSync(()->{
+                screen.view.setControllerAutoShow(false);
+                ((androidx.media3.ui.PlayerControlView)screen.view.findViewById(androidx.media3.ui.R.id.exo_controller)).setAnimationEnabled(false);
                 screen.player.pause();screen.player.setPlaybackSpeed(1.5f);
                 if(screen.player.getPlaybackParameters().speed!=1.5f)throw new AssertionError("Playback speed was not applied");
                 if(screen.getRequestedOrientation()!=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR)throw new AssertionError("Player does not default to automatic rotation");
@@ -92,6 +94,8 @@ final class MediaSmoke {
                 screen.view.hideController();
             });
             test.waitForIdleSync();Thread.sleep(700);
+            test.runOnMainSync(screen.singleTap);Thread.sleep(500);
+            test.runOnMainSync(()->{if(!screen.view.isControllerFullyVisible())throw new AssertionError("Single tap did not show controls");screen.view.hideController();});Thread.sleep(500);
             // Dismiss Android's first-use fullscreen education, which is outside the app's window.
             android.view.accessibility.AccessibilityNodeInfo active=test.getUiAutomation().getRootInActiveWindow();
             if(active!=null){
@@ -106,16 +110,32 @@ final class MediaSmoke {
             int pixel=screenshot.getPixel(screenshot.getWidth()/2,screenshot.getHeight()/8);
             if(android.graphics.Color.red(pixel)>5||android.graphics.Color.green(pixel)>5||android.graphics.Color.blue(pixel)>5)throw new AssertionError("Unused player area is not black: "+Integer.toHexString(pixel));
             screenshot.recycle();
-            ExoPlayer original=screen.player;long before=original.getCurrentPosition();
+            ExoPlayer original=screen.player;long[] before={0};test.runOnMainSync(()->before[0]=original.getCurrentPosition());
             try {
-                if(!test.getUiAutomation().setRotation(android.app.UiAutomation.ROTATION_FREEZE_90))throw new AssertionError("Emulator rotation failed");
-                Thread.sleep(1800);test.waitForIdleSync();
+                // Full-sensor mode intentionally ignores the emulator's user-rotation lock.
+                // Exercise the same orientation change through the player's landscape option.
+                test.runOnMainSync(()->screen.setOrientationMode(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE));
+                Thread.sleep(2500);test.waitForIdleSync();
                 test.runOnMainSync(()->{
                     if(screen.getResources().getConfiguration().orientation!=android.content.res.Configuration.ORIENTATION_LANDSCAPE)throw new AssertionError("Player did not rotate to landscape");
-                    if(screen.player!=original||Math.abs(screen.player.getCurrentPosition()-before)>500)throw new AssertionError("Rotation restarted playback");
+                    if(screen.player!=original||Math.abs(screen.player.getCurrentPosition()-before[0])>500)throw new AssertionError("Rotation restarted playback");
+                    screen.view.hideController();screen.setBrightness(.2f);
+                    swipe(screen.view,.25f);
+                    if(screen.brightness()<=.2f)throw new AssertionError("Left swipe did not increase brightness");
+                    int previous=screen.audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
+                    int max=screen.audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
+                    try{screen.setVolume(max/4);swipe(screen.view,.75f);if(screen.audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)<=max/4)throw new AssertionError("Right swipe did not increase volume");}
+                    finally{screen.audio.setStreamVolume(android.media.AudioManager.STREAM_MUSIC,previous,0);}
+                    long t=android.os.SystemClock.uptimeMillis();screen.tapVideo(true,t);screen.tapVideo(true,t+80);screen.tapVideo(true,t+160);screen.tapVideo(true,t+240);
+                    if(!screen.gestureHud.getText().toString().contains("30 seconds"))throw new AssertionError("Repeated tap feedback incorrect");
                 });
-            } finally {test.getUiAutomation().setRotation(android.app.UiAutomation.ROTATION_UNFREEZE);}
+            } finally {test.runOnMainSync(()->screen.setOrientationMode(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR));}
         } finally {test.runOnMainSync(screen::finish);test.waitForIdleSync();}
+    }
+    private static void swipe(android.view.View view,float side){
+        long time=android.os.SystemClock.uptimeMillis();float x=view.getWidth()*side;
+        int[] actions={android.view.MotionEvent.ACTION_DOWN,android.view.MotionEvent.ACTION_MOVE,android.view.MotionEvent.ACTION_UP};
+        for(int i=0;i<actions.length;i++){android.view.MotionEvent event=android.view.MotionEvent.obtain(time,time+i*40,actions[i],x,view.getHeight()*(i==0?.8f:.3f),0);view.dispatchTouchEvent(event);event.recycle();}
     }
     static void play(Instrumentation test,Activity activity,JSONObject source,MediaItem item,boolean offline)throws Exception{
         CountDownLatch ready=new CountDownLatch(1);AtomicReference<String> error=new AtomicReference<>();ExoPlayer[] holder=new ExoPlayer[1];
