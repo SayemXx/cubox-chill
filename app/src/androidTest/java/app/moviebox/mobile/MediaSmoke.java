@@ -120,11 +120,11 @@ final class MediaSmoke {
                     if(screen.getResources().getConfiguration().orientation!=android.content.res.Configuration.ORIENTATION_LANDSCAPE)throw new AssertionError("Player did not rotate to landscape");
                     if(screen.player!=original||Math.abs(screen.player.getCurrentPosition()-before[0])>500)throw new AssertionError("Rotation restarted playback");
                     screen.view.hideController();screen.setBrightness(.2f);
-                    swipe(screen.view,.25f);
+                    swipe(screen.view,.1f);
                     if(screen.brightness()<=.2f)throw new AssertionError("Left swipe did not increase brightness");
                     int previous=screen.audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
                     int max=screen.audio.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
-                    try{screen.setVolume(max/4);swipe(screen.view,.75f);if(screen.audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)<=max/4)throw new AssertionError("Right swipe did not increase volume");}
+                    try{screen.setVolume(max/4);swipe(screen.view,.9f);if(screen.audio.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)<=max/4)throw new AssertionError("Right swipe did not increase volume");}
                     finally{screen.audio.setStreamVolume(android.media.AudioManager.STREAM_MUSIC,previous,0);}
                     screen.player.seekTo(0);horizontalSwipe(screen.view,.3f,.6f,false);
                     if(screen.player.getCurrentPosition()<=0)throw new AssertionError("Right slide did not seek forward");
