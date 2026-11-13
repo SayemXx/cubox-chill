@@ -42,7 +42,25 @@ public class MainActivity extends Activity {
     LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
     Button button(String value,Runnable action){Button b=new Button(this);b.setText(value);b.setAllCaps(false);b.setTextSize(14);b.setTypeface(Typeface.DEFAULT,Typeface.BOLD);b.setTextColor(INK);b.setBackground(shape(ACCENT,5));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.setMargins(0,dp(7),0,dp(7));b.setLayoutParams(p);b.setOnClickListener(v->action.run());return b;}
     Button secondary(String value,Runnable action){Button b=button(value,action);b.setBackground(shape(Color.rgb(42,42,42),5));return b;}
-    void shell(String tab){screen=tab;generation++;main.removeCallbacks(refreshDownloads);root=column();root.setBackgroundColor(BG);setContentView(root);if(TvSupport.enabled(this))root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
+    int tvWidth(){return getResources().getConfiguration().screenWidthDp;}
+    int tvHeight(){return getResources().getConfiguration().screenHeightDp;}
+    void tvShell(String tab){
+        screen=tab;generation++;main.removeCallbacks(refreshDownloads);
+        root=new LinearLayout(this);root.setOrientation(LinearLayout.HORIZONTAL);root.setBackgroundColor(BG);setContentView(root);
+        root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
+        int iconSize=TvLayout.icon(tvWidth(),tvHeight());int sidebar=iconSize+62;
+        nav=column();nav.setGravity(Gravity.CENTER_HORIZONTAL);nav.setPadding(dp(10),dp(24),dp(10),dp(20));nav.setBackgroundColor(0xff101010);root.addView(nav,new LinearLayout.LayoutParams(dp(sidebar),-1));
+        TextView logo=heading("C",32);logo.setTextColor(ACCENT);logo.setGravity(Gravity.CENTER);nav.addView(logo,new LinearLayout.LayoutParams(-1,dp(60)));
+        String[] labels={"Home","Downloads","Updates","My Cubox"};String[] keys={"browse","downloads","updates","about"};int[] icons={R.drawable.ic_home,R.drawable.ic_download,R.drawable.ic_updates,R.drawable.ic_profile};
+        for(int i=0;i<labels.length;i++){
+            final int index=i;boolean active=tab.equals(keys[i])||(i==0&&tab.equals("detail"));TextView item=text(labels[i],12,active?INK:MUTED);item.setTextSize(12*TvLayout.scale(tvWidth(),tvHeight()));item.setGravity(Gravity.CENTER);item.setBackground(shape(active?0xff501016:0xff101010,8));item.setPadding(dp(4),dp(8),dp(4),dp(8));
+            android.graphics.drawable.Drawable icon=getDrawable(icons[i]).mutate();icon.setTint(active?ACCENT:INK);icon.setBounds(0,0,dp(iconSize),dp(iconSize));item.setCompoundDrawables(null,icon,null,null);item.setCompoundDrawablePadding(dp(6));item.setOnClickListener(v->{if(index==0)showBrowse();else if(index==1)showDownloads();else if(index==2)showUpdates();else showAbout();});
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(iconSize+48));lp.setMargins(0,dp(6),0,dp(6));nav.addView(item,lp);
+        }
+        LinearLayout page=column();root.addView(page,new LinearLayout.LayoutParams(0,-1,1));TextView title=heading("CUBOX & CHILL",22);title.setTextColor(ACCENT);title.setPadding(dp(28),dp(12),0,dp(4));page.addView(title);
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setClipToPadding(false);scroll.setVerticalScrollBarEnabled(false);body=column();body.setPadding(dp(28),dp(8),dp(28),dp(28));scroll.addView(body);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    }
+    void shell(String tab){if(TvSupport.enabled(this)){tvShell(tab);return;}screen=tab;generation++;main.removeCallbacks(refreshDownloads);root=column();root.setBackgroundColor(BG);setContentView(root);if(TvSupport.enabled(this))root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
         root.setOnApplyWindowInsetsListener((v,insets)->{root.setPadding(0,insets.getSystemWindowInsetTop(),0,insets.getSystemWindowInsetBottom());return insets.consumeSystemWindowInsets();});
         LinearLayout brand=new LinearLayout(this);brand.setPadding(dp(20),dp(4),dp(20),dp(4));brand.setGravity(Gravity.CENTER_VERTICAL);
         TextView logo=heading("CUBOX & CHILL",24);logo.setTextColor(ACCENT);logo.setLetterSpacing(-.05f);brand.addView(logo,new LinearLayout.LayoutParams(0,dp(52),1));
@@ -57,10 +75,10 @@ public class MainActivity extends Activity {
     ImageView artwork(JSONObject item){ImageView image=new ImageView(this);image.setScaleType(ImageView.ScaleType.CENTER_CROP);image.setContentDescription(item.optString("title")+" poster");Posters.load(image,Engine.str(item,"poster_url"));return image;}
     FrameLayout hero(JSONObject item,boolean detailPage){
         FrameLayout frame=new FrameLayout(this);frame.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xff451016,0xff1b1116,0xff111111}));frame.setClipToOutline(true);
-        LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(-1,dp(item==null?230:detailPage?370:280));size.setMargins(0,dp(12),0,dp(18));frame.setLayoutParams(size);
+        LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(-1,dp(TvSupport.enabled(this)?TvLayout.hero(tvWidth(),tvHeight()):item==null?230:detailPage?370:280));size.setMargins(0,dp(12),0,dp(18));frame.setLayoutParams(size);
         if(item!=null)frame.addView(artwork(item),new FrameLayout.LayoutParams(-1,-1));
-        View fade=new View(this);fade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x08000000,0x44000000,0xfa080808}));frame.addView(fade,new FrameLayout.LayoutParams(-1,-1));
-        LinearLayout content=column();content.setPadding(dp(20),dp(14),dp(20),dp(18));FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);frame.addView(content,cp);
+        View fade=new View(this);fade.setBackground(new GradientDrawable((TvSupport.enabled(this)?GradientDrawable.Orientation.RIGHT_LEFT:GradientDrawable.Orientation.TOP_BOTTOM),new int[]{0x08000000,0x44000000,0xfa080808}));frame.addView(fade,new FrameLayout.LayoutParams(-1,-1));
+        LinearLayout content=column();content.setPadding(dp(20),dp(14),dp(20),dp(18));FrameLayout.LayoutParams cp=new FrameLayout.LayoutParams(TvSupport.enabled(this)?dp(Math.max(280,(tvWidth()-140)/2)):-1,-2,Gravity.BOTTOM|Gravity.LEFT);frame.addView(content,cp);
         TextView label=eyebrow(item==null?"MOVIES & SERIES":detailPage?"CUBOX & CHILL": "IN THE SPOTLIGHT");label.setTextColor(INK);content.addView(label);
         TextView title=heading(item==null?"Find your\nnext watch.":item.optString("title"),item==null?34:30);title.setMaxLines(3);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setLineSpacing(0,.98f);content.addView(title);
         String metadata=item==null?"Five sources. One place to unwind.":String.join("  •  ",nonempty(Engine.str(item,"year"),item.optString("media_type").equals("series")?"Series":"Movie",detailPage?Engine.str(item,"duration"):""));content.addView(text(metadata,12,0xffdddddd));
@@ -108,7 +126,7 @@ public class MainActivity extends Activity {
         if(catalog.length()>0&&(provider.equals("moviebox")||provider.equals("dramachi")))results.addView(secondary("Discover more",()->{page++;loadCatalog(true);}));
     }
     void addRail(String title,List<JSONObject> items){if(items.isEmpty())return;TextView h=heading(title,20);h.setPadding(0,dp(8),0,dp(12));results.addView(h);HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);scroll.setClipToPadding(false);LinearLayout rail=new LinearLayout(this);for(JSONObject item:items)rail.addView(poster(item));scroll.addView(rail);results.addView(scroll);}
-    View poster(JSONObject item){LinearLayout tile=column();LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(dp(126),-2);tp.setMargins(0,0,dp(10),dp(18));tile.setLayoutParams(tp);FrameLayout cover=new FrameLayout(this);cover.setBackground(shape(0xff242424,5));cover.setClipToOutline(true);tile.addView(cover,new LinearLayout.LayoutParams(-1,dp(184)));
+    View poster(JSONObject item){LinearLayout tile=column();LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(dp(TvSupport.enabled(this)?TvLayout.poster(tvWidth(),tvHeight()):126),-2);tp.setMargins(0,0,dp(10),dp(18));tile.setLayoutParams(tp);FrameLayout cover=new FrameLayout(this);cover.setBackground(shape(0xff242424,5));cover.setClipToOutline(true);tile.addView(cover,new LinearLayout.LayoutParams(-1,dp(TvSupport.enabled(this)?Math.round(TvLayout.poster(tvWidth(),tvHeight())*1.48f):184)));
         TextView fallback=heading(item.optString("title"),17);fallback.setGravity(Gravity.CENTER);fallback.setTextColor(0xff777777);fallback.setPadding(dp(12),dp(12),dp(12),dp(12));fallback.setMaxLines(5);fallback.setEllipsize(android.text.TextUtils.TruncateAt.END);cover.addView(fallback,new FrameLayout.LayoutParams(-1,-1));cover.addView(artwork(item),new FrameLayout.LayoutParams(-1,-1));
         TextView mark=heading("C",17);mark.setTextColor(ACCENT);mark.setShadowLayer(dp(3),0,0,Color.BLACK);FrameLayout.LayoutParams mp=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.START);mp.setMargins(dp(8),dp(2),0,0);cover.addView(mark,mp);
         TextView title=heading(item.optString("title"),12);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(title);tile.addView(text(Engine.str(item,"year"),10,MUTED));tile.setContentDescription(item.optString("title")+", "+Engine.str(item,"year")+". Open details");tile.setOnClickListener(v->loadDetail(item));return tile;
