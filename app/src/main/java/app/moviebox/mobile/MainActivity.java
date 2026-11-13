@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
     LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
     Button button(String value,Runnable action){Button b=new Button(this);b.setText(value);b.setAllCaps(false);b.setTextSize(14);b.setTypeface(Typeface.DEFAULT,Typeface.BOLD);b.setTextColor(INK);b.setBackground(shape(ACCENT,5));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.setMargins(0,dp(7),0,dp(7));b.setLayoutParams(p);b.setOnClickListener(v->action.run());return b;}
     Button secondary(String value,Runnable action){Button b=button(value,action);b.setBackground(shape(Color.rgb(42,42,42),5));return b;}
-    void shell(String tab){screen=tab;generation++;main.removeCallbacks(refreshDownloads);root=column();root.setBackgroundColor(BG);setContentView(root);
+    void shell(String tab){screen=tab;generation++;main.removeCallbacks(refreshDownloads);root=column();root.setBackgroundColor(BG);setContentView(root);if(TvSupport.enabled(this))root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
         root.setOnApplyWindowInsetsListener((v,insets)->{root.setPadding(0,insets.getSystemWindowInsetTop(),0,insets.getSystemWindowInsetBottom());return insets.consumeSystemWindowInsets();});
         LinearLayout brand=new LinearLayout(this);brand.setPadding(dp(20),dp(4),dp(20),dp(4));brand.setGravity(Gravity.CENTER_VERTICAL);
         TextView logo=heading("CUBOX & CHILL",24);logo.setTextColor(ACCENT);logo.setLetterSpacing(-.05f);brand.addView(logo,new LinearLayout.LayoutParams(0,dp(52),1));

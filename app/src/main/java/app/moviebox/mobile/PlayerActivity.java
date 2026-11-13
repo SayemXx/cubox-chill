@@ -31,7 +31,7 @@ public class PlayerActivity extends Activity {
     final Runnable singleTap=()->{if(view!=null&&!locked)view.performClick();};
     final Runnable hideGesture=()->{if(gestureHud!=null)gestureHud.animate().alpha(0f).setDuration(220).withEndAction(()->gestureHud.setVisibility(View.GONE)).start();};
     @Override public void onCreate(Bundle state){
-        super.onCreate(state);orientation=getSharedPreferences("player",0).getInt("orientation",ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);setRequestedOrientation(orientation);getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+        super.onCreate(state);orientation=getSharedPreferences("player",0).getInt("orientation",ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);if(TvSupport.enabled(this))orientation=ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;setRequestedOrientation(orientation);getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
         getWindow().setStatusBarColor(Color.BLACK);getWindow().setNavigationBarColor(Color.BLACK);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);immersive();
         try{source=new JSONObject(getIntent().getStringExtra("source"));}catch(Exception e){finish();return;}
@@ -57,7 +57,7 @@ public class PlayerActivity extends Activity {
         unlock=control("Unlock","Unlock player controls",()->setLocked(false));unlock.setBackgroundColor(0xcc202020);FrameLayout.LayoutParams up=new FrameLayout.LayoutParams(dp(82),dp(44),Gravity.TOP|Gravity.END);up.setMargins(0,dp(8),dp(12),0);root.addView(unlock,up);
         view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener)visibility->{if(!locked&&!isInPictureInPictureMode())toolbar.setVisibility(visibility);});
         gestureHud=new TextView(this);gestureHud.setGravity(Gravity.CENTER);gestureHud.setTextColor(Color.WHITE);gestureHud.setTextSize(21);gestureHud.setTypeface(Typeface.DEFAULT,Typeface.BOLD);gestureHud.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);android.graphics.drawable.GradientDrawable bubble=new android.graphics.drawable.GradientDrawable();bubble.setColor(0xb8202020);bubble.setCornerRadius(dp(80));gestureHud.setBackground(bubble);gestureHud.setVisibility(View.GONE);root.addView(gestureHud,new FrameLayout.LayoutParams(dp(150),dp(150),Gravity.CENTER));
-        audio=(android.media.AudioManager)getSystemService(AUDIO_SERVICE);installGestures();setContentView(root);setLocked(locked);
+        audio=(android.media.AudioManager)getSystemService(AUDIO_SERVICE);installGestures();setContentView(root);setLocked(locked);if(TvSupport.enabled(this))root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
         root.setOnApplyWindowInsetsListener((v,insets)->{toolbar.setPadding(Math.max(dp(8),insets.getSystemWindowInsetLeft()),Math.max(dp(6),insets.getSystemWindowInsetTop()),Math.max(dp(8),insets.getSystemWindowInsetRight()),dp(6));return insets;});
     }
     int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
@@ -106,6 +106,21 @@ public class PlayerActivity extends Activity {
             default->{return true;}
         }
     });}
+    @Override public boolean dispatchKeyEvent(KeyEvent event){
+        if(TvSupport.enabled(this)&&player!=null&&event.getAction()==KeyEvent.ACTION_DOWN){
+            int key=event.getKeyCode();
+            if(key==KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE||(key==KeyEvent.KEYCODE_DPAD_CENTER&&!view.isControllerFullyVisible())){if(player.isPlaying())player.pause();else player.play();return true;}
+            if(key==KeyEvent.KEYCODE_MEDIA_PLAY){player.play();return true;}
+            if(key==KeyEvent.KEYCODE_MEDIA_PAUSE){player.pause();return true;}
+            if(key==KeyEvent.KEYCODE_MENU){settings();return true;}
+            if(!view.isControllerFullyVisible()){
+                if(key==KeyEvent.KEYCODE_DPAD_LEFT){player.seekBack();showGesture("−10 seconds",-1);return true;}
+                if(key==KeyEvent.KEYCODE_DPAD_RIGHT){player.seekForward();showGesture("+10 seconds",1);return true;}
+                if(key==KeyEvent.KEYCODE_DPAD_UP||key==KeyEvent.KEYCODE_DPAD_DOWN){view.showController();toolbar.requestFocus();return true;}
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
     @Override protected void onDestroy(){gestures.removeCallbacksAndMessages(null);super.onDestroy();}
     @Override public void onBackPressed(){if(locked)setLocked(false);else super.onBackPressed();}
     @Override protected void onStop(){if(player!=null){position=player.getPlaybackState()==Player.STATE_ENDED?0:player.getCurrentPosition();playWhenReady=player.getPlayWhenReady();selection=player.getTrackSelectionParameters();getSharedPreferences("resume",0).edit().putLong(key,position).apply();view.setPlayer(null);player.release();player=null;}super.onStop();}
