@@ -86,7 +86,7 @@ public class PlayerActivity extends Activity {
         if(labels.size()==1){Toast.makeText(this,type==C.TRACK_TYPE_AUDIO?"No selectable audio tracks yet":"This stream has no available subtitle tracks",Toast.LENGTH_LONG).show();return;}
         new AlertDialog.Builder(this).setTitle(type==C.TRACK_TYPE_AUDIO?"Audio track":"Subtitles").setSingleChoiceItems(labels.toArray(new String[0]),selected,(d,n)->{if(player!=null){TrackSelectionParameters.Builder b=player.getTrackSelectionParameters().buildUpon().clearOverridesOfType(type).setTrackTypeDisabled(type,type==C.TRACK_TYPE_TEXT&&n==0);if(overrides.get(n)!=null)b.setOverrideForType(overrides.get(n));player.setTrackSelectionParameters(b.build());}d.dismiss();}).show();
     }
-    void chooseOrientation(){String[] labels={"Auto · follow phone rotation","Portrait","Landscape"};int[] modes={ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR,ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT,ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE};int selected=orientation==modes[1]?1:orientation==modes[2]?2:0;new AlertDialog.Builder(this).setTitle("Screen rotation").setSingleChoiceItems(labels,selected,(d,n)->{setOrientationMode(modes[n]);d.dismiss();}).show();}
+    void chooseOrientation(){if(TvSupport.enabled(this)){Toast.makeText(this,"TV playback stays in landscape",Toast.LENGTH_SHORT).show();return;}String[] labels={"Auto · follow phone rotation","Portrait","Landscape"};int[] modes={ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR,ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT,ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE};int selected=orientation==modes[1]?1:orientation==modes[2]?2:0;new AlertDialog.Builder(this).setTitle("Screen rotation").setSingleChoiceItems(labels,selected,(d,n)->{setOrientationMode(modes[n]);d.dismiss();}).show();}
     void setOrientationMode(int mode){orientation=mode;getSharedPreferences("player",0).edit().putInt("orientation",mode).apply();if(!locked)setRequestedOrientation(mode);}
     void setLocked(boolean value){gestures.removeCallbacks(singleTap);tapSeek.reset();locked=value;setRequestedOrientation(value?ActivityInfo.SCREEN_ORIENTATION_LOCKED:orientation);unlock.setVisibility(value?View.VISIBLE:View.GONE);view.setUseController(!value);toolbar.setVisibility(value?View.GONE:View.VISIBLE);if(!value)view.showController();}
     void miniPlayer(){if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)){Toast.makeText(this,"Picture-in-picture is not supported on this device",Toast.LENGTH_LONG).show();return;}VideoSize video=player==null?VideoSize.UNKNOWN:player.getVideoSize();int w=video.width>0?video.width:16,h=video.height>0?video.height:9;double ratio=(double)w/h;if(ratio<.42||ratio>2.39){w=16;h=9;}try{if(!enterPictureInPictureMode(new PictureInPictureParams.Builder().setAspectRatio(new Rational(w,h)).build()))Toast.makeText(this,"Enable picture-in-picture for cubox & chill in Android settings",Toast.LENGTH_LONG).show();}catch(IllegalStateException|IllegalArgumentException e){Toast.makeText(this,"Picture-in-picture is unavailable right now",Toast.LENGTH_LONG).show();}}
@@ -107,7 +107,7 @@ public class PlayerActivity extends Activity {
         }
     });}
     @Override public boolean dispatchKeyEvent(KeyEvent event){
-        if(TvSupport.enabled(this)&&player!=null&&event.getAction()==KeyEvent.ACTION_DOWN){
+        if(TvSupport.enabled(this)&&player!=null&&!locked&&event.getAction()==KeyEvent.ACTION_DOWN){
             int key=event.getKeyCode();
             if(key==KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE||(key==KeyEvent.KEYCODE_DPAD_CENTER&&!view.isControllerFullyVisible())){if(player.isPlaying())player.pause();else player.play();return true;}
             if(key==KeyEvent.KEYCODE_MEDIA_PLAY){player.play();return true;}
@@ -122,7 +122,7 @@ public class PlayerActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
     @Override protected void onDestroy(){gestures.removeCallbacksAndMessages(null);super.onDestroy();}
-    @Override public void onBackPressed(){if(locked)setLocked(false);else super.onBackPressed();}
+    @Override public void onBackPressed(){if(locked)setLocked(false);else if(TvSupport.enabled(this)&&view.isControllerFullyVisible())view.hideController();else super.onBackPressed();}
     @Override protected void onStop(){if(player!=null){position=player.getPlaybackState()==Player.STATE_ENDED?0:player.getCurrentPosition();playWhenReady=player.getPlayWhenReady();selection=player.getTrackSelectionParameters();getSharedPreferences("resume",0).edit().putLong(key,position).apply();view.setPlayer(null);player.release();player=null;}super.onStop();}
     @Override protected void onSaveInstanceState(Bundle b){b.putLong("position",player==null?position:player.getCurrentPosition());b.putBoolean("playing",player==null?playWhenReady:player.getPlayWhenReady());b.putBoolean("locked",locked);super.onSaveInstanceState(b);}
 }

@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
     @Override public void onBackPressed(){if(!screen.equals("browse"))showBrowse();else super.onBackPressed();}
     int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     GradientDrawable shape(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
-    TextView text(String value,int size,int color){TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(color);t.setPadding(0,dp(5),0,dp(5));return t;}
+    TextView text(String value,int size,int color){TextView t=new TextView(this);t.setText(value);t.setTextSize(TvSupport.enabled(this)?Math.max(16,size):size);t.setTextColor(color);t.setPadding(0,dp(5),0,dp(5));return t;}
     TextView heading(String value,int size){TextView t=text(value,size,INK);t.setTypeface(Typeface.DEFAULT,Typeface.BOLD);return t;}
     LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(LinearLayout.VERTICAL);return l;}
     Button button(String value,Runnable action){Button b=new Button(this);b.setText(value);b.setAllCaps(false);b.setTextSize(14);b.setTypeface(Typeface.DEFAULT,Typeface.BOLD);b.setTextColor(INK);b.setBackground(shape(ACCENT,5));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(48));p.setMargins(0,dp(7),0,dp(7));b.setLayoutParams(p);b.setOnClickListener(v->action.run());return b;}
