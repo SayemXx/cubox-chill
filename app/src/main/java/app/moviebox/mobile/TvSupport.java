@@ -10,7 +10,7 @@ final class TvSupport {
     static void focus(View view){
         if(view.isClickable()){
             view.setFocusable(true);
-            if(view.getTag(android.R.id.custom)==null){view.setTag(android.R.id.custom,Boolean.TRUE);view.setOnFocusChangeListener((v,has)->{
+            if(view.getTag(R.id.tv_focus_initialized)==null){view.setTag(R.id.tv_focus_initialized,Boolean.TRUE);view.setOnFocusChangeListener((v,has)->{
                 if(has){GradientDrawable outline=new GradientDrawable();outline.setColor(0x22ffffff);outline.setStroke(3,Color.WHITE);outline.setCornerRadius(8);v.setForeground(outline);v.requestRectangleOnScreen(new android.graphics.Rect(0,0,v.getWidth(),v.getHeight()),false);}else v.setForeground(null);
             });}
         }
