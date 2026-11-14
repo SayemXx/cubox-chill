@@ -2,6 +2,8 @@
 
 Developer: **Sayem**. Independent native Android client using the real MovieBox-TUI Rust provider engine. No Termux, server, or separate player installation is required.
 
+An **iPhone-only preview (iOS 16+)** is now available as a separate SwiftUI project in [`ios/`](ios/README.md), sharing the provider engine with Android. It has its own build workflow and a smaller initial feature set. Its unsigned build is a developer artifact, not an installable IPA; Apple signing and physical-device validation are still required. The features below describe the Android app.
+
 ## Features
 
 - MovieBox, 4KHDHub, Dramachi, CircleFTP and DhakaFlix search.
