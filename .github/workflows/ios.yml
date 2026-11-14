@@ -1,0 +1,37 @@
+name: Build iPhone preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['ios/**', 'native/src/**', 'vendor/moviebox-tui/**', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', 'native/src/**', 'vendor/moviebox-tui/**', '.github/workflows/ios.yml']
+permissions:
+  contents: read
+jobs:
+  iphone:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ios/native
+      - run: brew install xcodegen
+      - run: cargo test --manifest-path ios/native/Cargo.toml --lib
+      - run: bash ios/scripts/build-native.sh
+      - run: xcodegen generate --spec ios/project.yml
+      - name: Build unsigned iPhone app
+        run: xcodebuild -project ios/CuboxChill.xcodeproj -scheme CuboxChill -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath ios/build/device CODE_SIGNING_ALLOWED=NO build
+      - name: Test iPhone simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for devices in d["devices"].values() for x in devices if x["name"].startswith("iPhone")))')
+          xcodebuild -project ios/CuboxChill.xcodeproj -scheme CuboxChill -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" ARCHS=arm64 -derivedDataPath ios/build/simulator CODE_SIGNING_ALLOWED=NO test
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: cubox-iphone-unsigned-preview
+          path: |
+            ios/build/device/Build/Products/Release-iphoneos/*.app
+            ios/build/simulator/Logs/Test/*.xcresult

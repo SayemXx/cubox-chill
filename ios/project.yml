@@ -1,0 +1,47 @@
+name: CuboxChill
+options:
+  deploymentTarget:
+    iOS: '16.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    TARGETED_DEVICE_FAMILY: '1'
+    SUPPORTS_MACCATALYST: NO
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+targets:
+  CuboxChill:
+    type: application
+    platform: iOS
+    sources: [Cubox]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.cubox.chill
+        MARKETING_VERSION: '0.1.0'
+        CURRENT_PROJECT_VERSION: '1'
+        SWIFT_OBJC_BRIDGING_HEADER: Cubox/Bridge.h
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Cubox/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        LIBRARY_SEARCH_PATHS: '$(inherited) $(PROJECT_DIR)/Libraries/$(PLATFORM_NAME)'
+        OTHER_LDFLAGS: '$(inherited) -lcubox_ios -lc++ -lz -liconv -framework Security -framework SystemConfiguration -framework CoreFoundation'
+    dependencies:
+      - sdk: AVKit.framework
+      - sdk: MediaPlayer.framework
+  CuboxTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [Tests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.cubox.chill.tests
+    dependencies:
+      - target: CuboxChill
+schemes:
+  CuboxChill:
+    build:
+      targets:
+        CuboxChill: all
+    test:
+      targets: [CuboxTests]

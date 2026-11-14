@@ -6,3 +6,8 @@ local.properties
 *.keystore
 app/src/main/jniLibs/
 app/src/main/assets/licenses/rust/
+ios/native/target/
+ios/Libraries/
+ios/*.xcodeproj/
+ios/*.xcworkspace/
+**/xcuserdata/
