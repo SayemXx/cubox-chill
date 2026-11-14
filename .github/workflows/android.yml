@@ -3,7 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore: ['ios/**', '.github/workflows/ios.yml', '**/*.md', 'NOTICE']
   pull_request:
+    paths-ignore: ['ios/**', '.github/workflows/ios.yml', '**/*.md', 'NOTICE']
 permissions:
   contents: read
 jobs:

@@ -33,7 +33,7 @@ The GitHub **Build iPhone preview** workflow builds an unsigned device applicati
 - Keep the app foregrounded during downloads. Persistent background transfers, resume, download progress and multi-connection acceleration are pending.
 - VLC-style gestures, playback resume history and the Android app's full player controls are pending.
 - First-page browsing/search only in this milestone.
-- Apple signing, app icon/store assets, privacy/distribution review and TestFlight publication are pending. No claim of App Store acceptance.
+- Apple signing, store screenshots, privacy/distribution review and TestFlight publication are pending. No claim of App Store acceptance.
 - Embedded upstream engine updates require rebuilding this iOS app.
 
 ## License

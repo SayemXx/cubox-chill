@@ -23,6 +23,7 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Cubox/Info.plist
         CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         LIBRARY_SEARCH_PATHS: '$(inherited) $(PROJECT_DIR)/Libraries/$(PLATFORM_NAME)'
         OTHER_LDFLAGS: '$(inherited) -lcubox_ios -lc++ -lz -liconv -framework Security -framework SystemConfiguration -framework CoreFoundation'
     dependencies:
@@ -38,10 +39,21 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: app.cubox.chill.tests
     dependencies:
       - target: CuboxChill
+  CuboxUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.cubox.chill.uitests
+        TEST_TARGET_NAME: CuboxChill
+    dependencies:
+      - target: CuboxChill
 schemes:
   CuboxChill:
     build:
       targets:
         CuboxChill: all
     test:
-      targets: [CuboxTests]
+      targets: [CuboxTests, CuboxUITests]

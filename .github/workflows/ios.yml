@@ -18,8 +18,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ios/native
+          cache-on-failure: true
       - run: brew install xcodegen
-      - run: cargo test --manifest-path ios/native/Cargo.toml --lib
+      - name: Check Swift source before compiling engine
+        run: xcrun swiftc -typecheck -parse-as-library -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" -target arm64-apple-ios16.0-simulator -import-objc-header ios/Cubox/Bridge.h ios/Cubox/*.swift
+      - run: cargo test --locked --manifest-path ios/native/Cargo.toml --lib
       - run: bash ios/scripts/build-native.sh
       - run: xcodegen generate --spec ios/project.yml
       - name: Build unsigned iPhone app
@@ -29,7 +32,7 @@ jobs:
           DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for devices in d["devices"].values() for x in devices if x["name"].startswith("iPhone")))')
           xcodebuild -project ios/CuboxChill.xcodeproj -scheme CuboxChill -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" ARCHS=arm64 -derivedDataPath ios/build/simulator CODE_SIGNING_ALLOWED=NO test
       - uses: actions/upload-artifact@v4
-        if: success()
+        if: always()
         with:
           name: cubox-iphone-unsigned-preview
           path: |

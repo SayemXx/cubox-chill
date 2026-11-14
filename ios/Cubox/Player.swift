@@ -30,6 +30,10 @@ final class HeaderResourceLoader: NSObject, AVAssetResourceLoaderDelegate {
                 guard let http = response as? HTTPURLResponse, [200, 206].contains(http.statusCode) else {
                     throw CuboxError(message: "This server rejected playback. Try another server.")
                 }
+                let mime = (response.mimeType ?? "").lowercased()
+                guard !mime.contains("mpegurl"), !mime.contains("dash+xml"), !mime.contains("text/html") else {
+                    throw CuboxError(message: "This server did not return a supported direct video file. Choose another server.")
+                }
                 let total = http.value(forHTTPHeaderField: "Content-Range")?.split(separator: "/").last.flatMap { Int64($0) }
                 if let info = request.contentInformationRequest {
                     info.contentLength = total ?? response.expectedContentLength
