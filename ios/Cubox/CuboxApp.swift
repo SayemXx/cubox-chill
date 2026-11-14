@@ -178,7 +178,6 @@ private struct ServerScreen: View {
                                     Button { resolve(release, mirror: mirror, download: false) } label: { Label("Play", systemImage: "play.fill") }
                                     Spacer()
                                     Button { resolve(release, mirror: mirror, download: true) } label: { Label("Download", systemImage: "arrow.down") }
-                                        .disabled(!release.mirrors[mirror].direct_file)
                                 }.buttonStyle(.bordered).disabled(loading)
                             }.padding(.vertical, 4)
                         }
