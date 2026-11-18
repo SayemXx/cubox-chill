@@ -215,7 +215,7 @@ struct AboutScreen: View {
                 Section("cubox & chill") {
                     Text("Developer: Sayem")
                     Text("iPhone preview 0.1.0")
-                    Text("MovieBox-TUI engine 0.1.29")
+                    Text("MovieBox-TUI engine 0.1.30")
                 }
                 Section("Updates") {
                     Text("iPhone updates must be signed and installed through your Apple distribution method. Android APK releases cannot update this app.")

@@ -6,7 +6,7 @@ This is a separate iOS target; the Android app remains in `app/`.
 ## Implemented in this first milestone
 
 - Dark/red adaptive browsing grid, search across five providers, details, audio editions, episodes and server selection.
-- Real MovieBox-TUI 0.1.29 engine shared with Android through `native/src/core.rs`; iOS C ABI owns/frees its JSON response.
+- Real MovieBox-TUI 0.1.30 engine shared with Android through `native/src/core.rs`; iOS C ABI owns/frees its JSON response.
 - Disk artwork cache (64 MiB, 30 days), catalog cache (4 MiB; fresh for 6 hours, older titles visible during refresh).
 - AVPlayer with black unused space, native transport controls and rotation. Progressive-file header requests use the public AVAssetResourceLoader API.
 - Direct-file downloads, cancellation, persisted completed files, offline playback and removal. Downloads are excluded from iCloud backup.

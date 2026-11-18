@@ -9,6 +9,15 @@ public class TvFocusInstrumentation extends Instrumentation {
         try{
             LinearLayout root=new LinearLayout(getTargetContext());TextView button=new TextView(getTargetContext());button.setText("TV test");button.setOnClickListener(v->{});root.addView(button);
             TvSupport.focus(root);TvSupport.focus(root);
+            int[] clicks={0};button.setOnClickListener(v->clicks[0]++);
+            for(int key:new int[]{23,66,160}){
+                TvSupport.activate(button,key,new android.view.KeyEvent(0,key));
+                TvSupport.activate(button,key,new android.view.KeyEvent(1,key));
+            }
+            if(clicks[0]!=3)throw new AssertionError("Remote activation count: "+clicks[0]);
+            button.setEnabled(false);
+            if(TvSupport.activate(button,23,new android.view.KeyEvent(0,23)))throw new AssertionError("Disabled control consumed OK");
+            button.setEnabled(true);
             if(!button.isFocusable()||button.getTag(R.id.tv_focus_initialized)==null)throw new AssertionError("Focus not initialized");
             button.getOnFocusChangeListener().onFocusChange(button,true);
             if(button.getForeground()==null)throw new AssertionError("Focus highlight missing");

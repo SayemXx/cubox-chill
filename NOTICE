@@ -3,7 +3,7 @@ Developer: Sayem
 
 This application includes MovieBox-TUI by its upstream contributors.
 Upstream: https://github.com/mesamirh/MovieBox-Tui
-Bundled revision: 5fd687e46e165723755e6550aa4c107367d72545 (v0.1.29)
+Bundled revision: 1fe8874d9d13b11ead730364dc58ac6576ba1fcf (v0.1.30)
 Upstream licenses: MIT OR Apache-2.0. Full texts are preserved in vendor/moviebox-tui.
 
 Android playback and offline downloads use Media3 from the Android Open Source Project,

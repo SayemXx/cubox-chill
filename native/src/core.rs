@@ -38,7 +38,15 @@ async fn execute(s: &MovieBoxService, v: Value) -> Result<Value, String> {
                 ProviderKind::BdixDhakaFlix => s.dhakaflix_client.episode_streams(id, se, ep).await,
                 ProviderKind::Addons => return Err("Add-on configuration is not enabled in this mobile version".into()),
             };
-            result.map(|x| json!(x)).map_err(|e| e.user_message(provider))
+            result.map(|mut releases| {
+                if provider == ProviderKind::MovieBox {
+                    let fallback = releases.iter().find_map(|r| r.resource_id.clone().filter(|id| !id.is_empty()));
+                    for release in &mut releases {
+                        if release.resource_id.as_deref().unwrap_or("").is_empty() { release.resource_id = fallback.clone(); }
+                    }
+                }
+                json!(releases)
+            }).map_err(|e| e.user_message(provider))
         },
         "resolve" => {
             let mut release: Release = serde_json::from_value(v["release"].clone()).map_err(|e| e.to_string())?;
