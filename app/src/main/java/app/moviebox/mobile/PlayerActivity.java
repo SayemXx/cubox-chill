@@ -55,10 +55,16 @@ public class PlayerActivity extends Activity {
         toolbar.addView(control("⋮","Player settings",this::settings),new LinearLayout.LayoutParams(dp(44),dp(44)));
         root.addView(toolbar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
         unlock=control("Unlock","Unlock player controls",()->setLocked(false));unlock.setBackgroundColor(0xcc202020);FrameLayout.LayoutParams up=new FrameLayout.LayoutParams(dp(82),dp(44),Gravity.TOP|Gravity.END);up.setMargins(0,dp(8),dp(12),0);root.addView(unlock,up);
-        view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener)visibility->{if(!locked&&!isInPictureInPictureMode())toolbar.setVisibility(visibility);});
+        view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener)visibility->{if(!locked&&!isInPictureInPictureMode())toolbar.setVisibility(visibility);if(TvSupport.enabled(this)){if(visibility==View.VISIBLE)focusPlaybackControl();else {root.clearFocus();root.requestFocus();}}});
         gestureHud=new TextView(this);gestureHud.setGravity(Gravity.CENTER);gestureHud.setTextColor(Color.WHITE);gestureHud.setTextSize(21);gestureHud.setTypeface(Typeface.DEFAULT,Typeface.BOLD);gestureHud.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);android.graphics.drawable.GradientDrawable bubble=new android.graphics.drawable.GradientDrawable();bubble.setColor(0xb8202020);bubble.setCornerRadius(dp(80));gestureHud.setBackground(bubble);gestureHud.setVisibility(View.GONE);root.addView(gestureHud,new FrameLayout.LayoutParams(dp(150),dp(150),Gravity.CENTER));
-        audio=(android.media.AudioManager)getSystemService(AUDIO_SERVICE);installGestures();setContentView(root);setLocked(locked);if(TvSupport.enabled(this))root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
+        audio=(android.media.AudioManager)getSystemService(AUDIO_SERVICE);installGestures();setContentView(root);setLocked(locked);if(TvSupport.enabled(this)){root.setFocusable(true);root.setFocusableInTouchMode(true);root.getViewTreeObserver().addOnGlobalLayoutListener(()->{TvSupport.focus(toolbar);TvSupport.focus(unlock);});focusPlaybackControl();}
         root.setOnApplyWindowInsetsListener((v,insets)->{toolbar.setPadding(Math.max(dp(8),insets.getSystemWindowInsetLeft()),Math.max(dp(6),insets.getSystemWindowInsetTop()),Math.max(dp(8),insets.getSystemWindowInsetRight()),dp(6));return insets;});
+    }
+    void focusPlaybackControl(){
+        view.post(()->{if(!locked&&view.isControllerFullyVisible()){
+            View play=view.findViewById(androidx.media3.ui.R.id.exo_play_pause);
+            if(play!=null)play.requestFocus();
+        }});
     }
     int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     TextView control(String label,String description,Runnable action){TextView b=new TextView(this);b.setText(label);b.setTextSize(16);b.setTextColor(Color.WHITE);b.setGravity(Gravity.CENTER);b.setContentDescription(description);b.setOnClickListener(v->action.run());return b;}
@@ -116,7 +122,7 @@ public class PlayerActivity extends Activity {
             if(!view.isControllerFullyVisible()){
                 if(key==KeyEvent.KEYCODE_DPAD_LEFT){player.seekBack();showGesture("−10 seconds",-1);return true;}
                 if(key==KeyEvent.KEYCODE_DPAD_RIGHT){player.seekForward();showGesture("+10 seconds",1);return true;}
-                if(key==KeyEvent.KEYCODE_DPAD_UP||key==KeyEvent.KEYCODE_DPAD_DOWN){view.showController();toolbar.requestFocus();return true;}
+                if(key==KeyEvent.KEYCODE_DPAD_UP||key==KeyEvent.KEYCODE_DPAD_DOWN){view.showController();focusPlaybackControl();return true;}
             }
         }
         return super.dispatchKeyEvent(event);
