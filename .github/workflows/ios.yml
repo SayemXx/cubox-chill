@@ -33,6 +33,7 @@ jobs:
           xcodebuild -project ios/CuboxChill.xcodeproj -scheme CuboxChill -sdk iphonesimulator -destination "platform=iOS Simulator,id=$DEVICE" ARCHS=arm64 -derivedDataPath ios/build/simulator CODE_SIGNING_ALLOWED=NO test
       - name: Package unsigned app and test screenshots
         run: |
+          bash ios/scripts/package-ipa.sh
           ditto -c -k --keepParent ios/build/device/Build/Products/Release-iphoneos/CuboxChill.app ios/build/cubox-iphone-unsigned.zip
           RESULT=$(find ios/build/simulator/Logs/Test -name '*.xcresult' -maxdepth 1 | head -1)
           xcrun xcresulttool export attachments --path "$RESULT" --output-path ios/build/screenshots
@@ -42,5 +43,6 @@ jobs:
           name: cubox-iphone-unsigned-preview
           path: |
             ios/build/cubox-iphone-unsigned.zip
+            ios/build/distribution/
             ios/build/screenshots/
             ios/build/simulator/Logs/Test/*.xcresult
