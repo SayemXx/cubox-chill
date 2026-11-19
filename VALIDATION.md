@@ -1,3 +1,7 @@
-# cubox & chill 0.6.1 validation
+# cubox & chill 0.6.2 validation
 
-November 18, 2026. MovieBox-TUI v0.1.30 pinned to 1fe8874d9d13b11ead730364dc58ac6576ba1fcf. Android CI 44344478542 passed native builds for ARMv7/ARM64/x86_64, APK compilation, unit tests and lint. Local TV instrumentation passed focus initialization, repeat setup, highlighting, OK/Enter/numpad Enter activation and disabled-control rejection. This runs on a phone emulator using the TV helper directly; physical Mi TV and TV keyboard interactions have not been validated. Certificate SHA256 matches prior releases: 3eded4b6d33c88be5bb45cbe16f41cf203554f4f30d141220a3952b83886e1c0. Native libraries come from the new successful CI build, not stale local binaries. Live provider playback and subtitle fallback were not end-to-end tested for this release.
+November 19, 2026. CI run 44460216412 passed native builds (ARMv7, ARM64, x86_64), APK compilation, unit tests and lint for c30f4b592923d6c2a25d0fe2ab88fd21f0973c83.
+
+Removed generic TV focus decoration/key handling from the PlayerView tree. Only the custom toolbar and unlock control use that helper. When controls hide, focus returns to the undecorated root; on opening, Play/Pause receives focus. Media3 handles its own controller buttons. MovieBox-TUI stays at v0.1.30.
+
+This release has not been visually tested on a physical TV or in a TV emulator. The existing unit suite does not exercise this player focus lifecycle. Mi TV confirmation remains necessary. APK uses the same local signing certificate as previous releases.
