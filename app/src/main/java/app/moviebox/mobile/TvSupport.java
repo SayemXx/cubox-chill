@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.*;
 final class TvSupport {
+    static boolean confirmKey(int code){return code==KeyEvent.KEYCODE_DPAD_CENTER||code==KeyEvent.KEYCODE_ENTER||code==KeyEvent.KEYCODE_NUMPAD_ENTER||code==KeyEvent.KEYCODE_BUTTON_A||code==KeyEvent.KEYCODE_BUTTON_SELECT;}
     static boolean activate(View view,int code,KeyEvent event){
         if(!view.isEnabled())return false;
         if(view instanceof android.widget.EditText){
@@ -17,9 +18,10 @@ final class TvSupport {
             return true;
         }
         if(!view.isClickable())return false;
-        if(code!=KeyEvent.KEYCODE_DPAD_CENTER&&code!=KeyEvent.KEYCODE_ENTER&&code!=KeyEvent.KEYCODE_NUMPAD_ENTER)return false;
-        if(event.getAction()==KeyEvent.ACTION_DOWN){if(event.getRepeatCount()==0)view.setPressed(true);return true;}
-        if(event.getAction()==KeyEvent.ACTION_UP){boolean pressed=view.isPressed();view.setPressed(false);if(pressed&&!event.isCanceled())view.performClick();return true;}
+        if(!confirmKey(code))return false;
+        // TV firmware may clear pressed state before key-up. Do not use it as a click gate.
+        if(event.getAction()==KeyEvent.ACTION_DOWN){if(event.getRepeatCount()==0)view.performClick();return true;}
+        if(event.getAction()==KeyEvent.ACTION_UP){view.setPressed(false);return true;}
         return false;
     }
     static boolean enabled(Context c){UiModeManager m=(UiModeManager)c.getSystemService(Context.UI_MODE_SERVICE);return m!=null&&m.getCurrentModeType()==Configuration.UI_MODE_TYPE_TELEVISION;}

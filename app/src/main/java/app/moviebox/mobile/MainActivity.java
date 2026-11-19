@@ -22,6 +22,26 @@ public class MainActivity extends Activity {
     final String[] providerIds={"moviebox","fourkhdhub","dramachi","bdix_circleftp","bdix_dhakaflix"};
     final ExecutorService io=Executors.newFixedThreadPool(4);
     final Handler main=new Handler(Looper.getMainLooper());
+    int remoteActivationKey=-1;
+    @Override public boolean dispatchKeyEvent(KeyEvent event){
+        int code=event.getKeyCode();
+        if(event.getAction()==KeyEvent.ACTION_UP&&code==remoteActivationKey){remoteActivationKey=-1;return true;}
+        if(TvSupport.enabled(this)&&TvSupport.confirmKey(code)){
+            View target=getCurrentFocus();
+            // Let editable fields keep their native IME/Enter behavior.
+            if(!(target instanceof EditText)){
+                while(target!=null&&!target.isClickable())target=target.getParent() instanceof View?(View)target.getParent():null;
+                if(target!=null&&target.isEnabled()&&target.isShown()){
+                    if(event.getAction()==KeyEvent.ACTION_DOWN){
+                        remoteActivationKey=code;
+                        if(event.getRepeatCount()==0)target.performClick();
+                        return true;
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
     LinearLayout root,body,nav; String screen="browse",provider="moviebox",query="",filter="all"; int page=1,generation=0; JSONObject detail; JSONArray catalog=new JSONArray();
     EditText search; TextView status; LinearLayout results; ProgressBar progress; CatalogStore catalogStore;
     final Runnable refreshDownloads=new Runnable(){public void run(){if(screen.equals("downloads")){renderDownloads();main.postDelayed(this,1500);}}};
