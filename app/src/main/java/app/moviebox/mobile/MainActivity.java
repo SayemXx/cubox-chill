@@ -22,11 +22,11 @@ public class MainActivity extends Activity {
     final String[] providerIds={"moviebox","fourkhdhub","dramachi","bdix_circleftp","bdix_dhakaflix"};
     final ExecutorService io=Executors.newFixedThreadPool(4);
     final Handler main=new Handler(Looper.getMainLooper());
-    int remoteActivationKey=-1;
+    int remoteActivationKey=-1; boolean tvUi;
     @Override public boolean dispatchKeyEvent(KeyEvent event){
         int code=event.getKeyCode();
         if(event.getAction()==KeyEvent.ACTION_UP&&code==remoteActivationKey){remoteActivationKey=-1;return true;}
-        if(TvSupport.enabled(this)&&TvSupport.confirmKey(code)){
+        if(tvUi&&TvSupport.confirmKey(code)){
             View target=getCurrentFocus();
             // Let editable fields keep their native IME/Enter behavior.
             if(!(target instanceof EditText)){
@@ -64,7 +64,7 @@ public class MainActivity extends Activity {
     Button secondary(String value,Runnable action){Button b=button(value,action);b.setBackground(shape(Color.rgb(42,42,42),5));return b;}
     int tvWidth(){return getResources().getConfiguration().screenWidthDp;}
     int tvHeight(){return getResources().getConfiguration().screenHeightDp;}
-    void tvShell(String tab){
+    void tvShell(String tab){tvUi=true;
         screen=tab;generation++;main.removeCallbacks(refreshDownloads);
         root=new LinearLayout(this);root.setOrientation(LinearLayout.HORIZONTAL);root.setBackgroundColor(BG);setContentView(root);
         root.getViewTreeObserver().addOnGlobalLayoutListener(()->TvSupport.focus(root));
