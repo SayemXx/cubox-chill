@@ -22,6 +22,7 @@ final class FrostedDialog extends AlertDialog.Builder {
         }
         AlertDialog dialog=super.create();dialog.show();
         if(snapshot!=null&&dialog.getWindow()!=null){
+            if(android.os.Build.VERSION.SDK_INT>=31)dialog.getWindow().setBackgroundBlurRadius(0);
             View decor=dialog.getWindow().getDecorView();
             Drawable overlay=activity.getDrawable(R.drawable.glass_dialog);
             dialog.getWindow().setBackgroundDrawable(new Surface(snapshot,overlay,decor,origin,width,height,activity.getResources().getDisplayMetrics().density));
