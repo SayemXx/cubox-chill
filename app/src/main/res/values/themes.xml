@@ -12,7 +12,8 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
-    <style name="Theme.Cubox.Dialog" parent="android:style/Theme.Material.Dialog.Alert">
+    <style name="Theme.Cubox.Dialog" parent="Theme.Cubox.Dialog.Base" />
+    <style name="Theme.Cubox.Dialog.Base" parent="android:style/Theme.Material.Dialog.Alert">
         <item name="android:windowBackground">@drawable/glass_dialog</item>
         <item name="android:colorBackground">#15161E</item>
         <item name="android:colorAccent">#FF6672</item>

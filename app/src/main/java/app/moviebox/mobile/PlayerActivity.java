@@ -48,6 +48,12 @@ public class PlayerActivity extends Activity {
         View content=view.findViewById(androidx.media3.ui.R.id.exo_content_frame);if(content!=null)content.setBackgroundColor(Color.BLACK);
         if(view.getSubtitleView()!=null)view.getSubtitleView().setFractionalTextSize(subtitleSize);
         root.addView(view,new FrameLayout.LayoutParams(-1,-1));
+        // Keep the classic player layout; use the app's themed, blur-capable dialogs for menus.
+        View settingsButton=view.findViewById(androidx.media3.ui.R.id.exo_settings);
+        if(settingsButton!=null)settingsButton.setOnClickListener(v->settings());
+        View subtitleButton=view.findViewById(androidx.media3.ui.R.id.exo_subtitle);
+        if(subtitleButton!=null)subtitleButton.setOnClickListener(v->chooseTrack(C.TRACK_TYPE_TEXT));
+
         toolbar=new LinearLayout(this);toolbar.setGravity(Gravity.CENTER_VERTICAL);toolbar.setPadding(dp(8),dp(6),dp(8),dp(6));toolbar.setBackgroundColor(0xb8000000);
         toolbar.addView(control("‹","Back to title",this::finish),new LinearLayout.LayoutParams(dp(44),dp(44)));
         TextView title=new TextView(this);title.setText(getIntent().getStringExtra("title"));title.setTextSize(14);title.setTextColor(Color.WHITE);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);toolbar.addView(title,new LinearLayout.LayoutParams(0,-2,1));

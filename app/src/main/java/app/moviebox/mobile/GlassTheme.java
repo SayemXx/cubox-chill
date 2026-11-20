@@ -6,11 +6,11 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.Drawable;
 
-/** Lightweight translucent surfaces: no blur pass or video-surface effects. */
+/** Frosted app surfaces; dialog windows additionally use system blur on supported Android 12+ devices. */
 final class GlassTheme {
     static GradientDrawable panel(Context context,int radius){
         GradientDrawable d=new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{0x705d6272,0x80272b39,0x99202530});
+                new int[]{0xc0444752,0xc8242730,0xd01b1d24});
         d.setCornerRadius(radius*context.getResources().getDisplayMetrics().density);
         d.setStroke(Math.max(1,Math.round(context.getResources().getDisplayMetrics().density)),0x66ffffff);
         return d;
