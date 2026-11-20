@@ -28,6 +28,14 @@ final class GlassTheme {
         d.setCornerRadius(radius*density);
         return d;
     }
+    static GradientDrawable accent(Context context,int radius){
+        GradientDrawable d=panel(context,radius);
+        d.setColors(new int[]{0xb8b93246,0x90500e1b,0xc0250b12});
+        return d;
+    }
+    static Drawable primary(Context context,int radius){
+        return new RippleDrawable(ColorStateList.valueOf(0x38ffffff),accent(context,radius),null);
+    }
     static Drawable action(Context context,int radius){
         return new RippleDrawable(ColorStateList.valueOf(0x28ffffff),panel(context,radius),null);
     }
