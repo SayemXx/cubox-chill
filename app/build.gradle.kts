@@ -18,6 +18,7 @@ android {
     packaging { jniLibs { useLegacyPackaging = false } }
 }
 dependencies {
+    implementation("androidx.recyclerview:recyclerview:1.3.0")
     implementation("androidx.media3:media3-exoplayer:1.9.0")
     implementation("androidx.media3:media3-exoplayer-hls:1.9.0")
     implementation("androidx.media3:media3-exoplayer-dash:1.9.0")
