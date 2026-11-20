@@ -48,17 +48,30 @@ public class PlayerActivity extends Activity {
         View content=view.findViewById(androidx.media3.ui.R.id.exo_content_frame);if(content!=null)content.setBackgroundColor(Color.BLACK);
         if(view.getSubtitleView()!=null)view.getSubtitleView().setFractionalTextSize(subtitleSize);
         root.addView(view,new FrameLayout.LayoutParams(-1,-1));
-        toolbar=new LinearLayout(this);toolbar.setGravity(Gravity.CENTER_VERTICAL);toolbar.setPadding(dp(8),dp(6),dp(8),dp(6));toolbar.setBackgroundColor(0xb8000000);
+        toolbar=new LinearLayout(this);toolbar.setGravity(Gravity.CENTER_VERTICAL);toolbar.setPadding(dp(8),dp(6),dp(8),dp(6));toolbar.setBackground(GlassTheme.panel(this,18));
         toolbar.addView(control("‹","Back to title",this::finish),new LinearLayout.LayoutParams(dp(44),dp(44)));
         TextView title=new TextView(this);title.setText(getIntent().getStringExtra("title"));title.setTextSize(14);title.setTextColor(Color.WHITE);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);toolbar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
         toolbar.addView(control("Fit","Change video size",this::chooseFit),new LinearLayout.LayoutParams(dp(48),dp(44)));
         toolbar.addView(control("⋮","Player settings",this::settings),new LinearLayout.LayoutParams(dp(44),dp(44)));
-        root.addView(toolbar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
-        unlock=control("Unlock","Unlock player controls",()->setLocked(false));unlock.setBackgroundColor(0xcc202020);FrameLayout.LayoutParams up=new FrameLayout.LayoutParams(dp(82),dp(44),Gravity.TOP|Gravity.END);up.setMargins(0,dp(8),dp(12),0);root.addView(unlock,up);
+        FrameLayout.LayoutParams toolbarParams=new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);toolbarParams.setMargins(dp(12),dp(10),dp(12),0);root.addView(toolbar,toolbarParams);stylePlaybackControls();
+        unlock=control("Unlock","Unlock player controls",()->setLocked(false));unlock.setBackground(GlassTheme.action(this,14));FrameLayout.LayoutParams up=new FrameLayout.LayoutParams(dp(82),dp(44),Gravity.TOP|Gravity.END);up.setMargins(0,dp(8),dp(12),0);root.addView(unlock,up);
         view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener)visibility->{if(!locked&&!isInPictureInPictureMode())toolbar.setVisibility(visibility);if(TvSupport.enabled(this)){if(visibility==View.VISIBLE)focusPlaybackControl();else {root.clearFocus();root.requestFocus();}}});
-        gestureHud=new TextView(this);gestureHud.setGravity(Gravity.CENTER);gestureHud.setTextColor(Color.WHITE);gestureHud.setTextSize(21);gestureHud.setTypeface(Typeface.DEFAULT,Typeface.BOLD);gestureHud.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);android.graphics.drawable.GradientDrawable bubble=new android.graphics.drawable.GradientDrawable();bubble.setColor(0xb8202020);bubble.setCornerRadius(dp(80));gestureHud.setBackground(bubble);gestureHud.setVisibility(View.GONE);root.addView(gestureHud,new FrameLayout.LayoutParams(dp(150),dp(150),Gravity.CENTER));
+        gestureHud=new TextView(this);gestureHud.setGravity(Gravity.CENTER);gestureHud.setTextColor(Color.WHITE);gestureHud.setTextSize(21);gestureHud.setTypeface(Typeface.DEFAULT,Typeface.BOLD);gestureHud.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);android.graphics.drawable.GradientDrawable bubble=new android.graphics.drawable.GradientDrawable();gestureHud.setBackground(GlassTheme.panel(this,36));gestureHud.setVisibility(View.GONE);root.addView(gestureHud,new FrameLayout.LayoutParams(dp(150),dp(150),Gravity.CENTER));
         audio=(android.media.AudioManager)getSystemService(AUDIO_SERVICE);installGestures();setContentView(root);setLocked(locked);if(TvSupport.enabled(this)){root.setFocusable(true);root.setFocusableInTouchMode(true);root.getViewTreeObserver().addOnGlobalLayoutListener(()->{TvSupport.focus(toolbar);TvSupport.focus(unlock);});focusPlaybackControl();}
         root.setOnApplyWindowInsetsListener((v,insets)->{toolbar.setPadding(Math.max(dp(8),insets.getSystemWindowInsetLeft()),Math.max(dp(6),insets.getSystemWindowInsetTop()),Math.max(dp(8),insets.getSystemWindowInsetRight()),dp(6));return insets;});
+    }
+    void stylePlaybackControls(){
+        // Style only actual controls, never the video surface or its focusable container.
+        View bottom=view.findViewById(androidx.media3.ui.R.id.exo_bottom_bar);
+        if(bottom!=null)bottom.setBackground(GlassTheme.panel(this,16));
+        View center=view.findViewById(androidx.media3.ui.R.id.exo_center_controls);
+        if(center!=null)center.setBackground(GlassTheme.panel(this,28));
+        View progress=view.findViewById(androidx.media3.ui.R.id.exo_progress);
+        if(progress instanceof androidx.media3.ui.DefaultTimeBar){
+            androidx.media3.ui.DefaultTimeBar bar=(androidx.media3.ui.DefaultTimeBar)progress;
+            bar.setPlayedColor(0xffe50914);bar.setScrubberColor(0xffffffff);
+            bar.setBufferedColor(0x99ffffff);bar.setUnplayedColor(0x40ffffff);
+        }
     }
     void focusPlaybackControl(){
         view.post(()->{if(!locked&&view.isControllerFullyVisible()){
@@ -67,7 +80,7 @@ public class PlayerActivity extends Activity {
         }});
     }
     int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
-    TextView control(String label,String description,Runnable action){TextView b=new TextView(this);b.setText(label);b.setTextSize(16);b.setTextColor(Color.WHITE);b.setGravity(Gravity.CENTER);b.setContentDescription(description);b.setOnClickListener(v->action.run());return b;}
+    TextView control(String label,String description,Runnable action){TextView b=new TextView(this);b.setText(label);b.setTextSize(16);b.setTextColor(Color.WHITE);b.setGravity(Gravity.CENTER);b.setContentDescription(description);b.setBackground(GlassTheme.action(this,12));b.setOnClickListener(v->action.run());return b;}
     void immersive(){getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
     @Override public void onWindowFocusChanged(boolean focus){super.onWindowFocusChanged(focus);if(focus)immersive();}
     @Override protected void onStart(){super.onStart();
