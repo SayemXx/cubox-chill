@@ -1,11 +1,9 @@
-# cubox & chill 0.6.4 validation
+# cubox & chill 0.6.5 validation
 
-November 20, 2026. Code commit 17c6eea572ddd1b4535a36b13001c6a8720a8f6c.
+November 20, 2026. UI code commit a62916dd160d192ad5d3c29c341957d941217f1d.
 
-Local Android build, 15 unit tests and lint passed. Artwork tests cover persistence across cache instances, sliding 30-day last-use retention, memory-hit touches, automatic removal of unused entries, bounded oldest-used eviction, and migration from the previous cache folder.
+Local APK build, 15 unit tests and lint passed. GitHub Actions run 44693971526 passed the native builds for ARM32, ARM64 and x86_64, APK assembly, unit tests and lint. Release APK comes from that run and uses the existing local update signing key.
 
-GitHub Actions run 44692665490 passed native builds for three ABIs, APK assembly, unit tests and lint. Release artifact is from that run and is re-signed with the existing local update key.
+GlassSmokeInstrumentation ran on the phone emulator: phone About screen, forced TV shell and local-fixture player screens; playback controls show/hide. Screenshots were manually inspected for the phone glass cards/navigation and player controls. Initial screenshots were obscured by an emulator System UI startup stall and first-launch permission state; captures were repeated after resolving those emulator conditions. TV shell was exercised on a phone emulator, not physical TV hardware.
 
-Artwork now lives in filesDir/artwork-v1 (128 MB limit), migrated from cacheDir/artwork-v1. Local reads use a separate executor from downloads. Maintenance runs on first artwork use after process startup and daily during artwork use; an app that remains closed is cleaned on next use. URLs remain exact cache keys: a provider changing an image URL requires a new download. The cache does not store video streams.
-
-No physical-device or emulator UI test was performed for this cache-only release. TV input/player fixes and MovieBox-TUI 0.1.30 are unchanged.
+GlassTheme uses translucent gradients and subtle borders, not live background blur. The video surface, shutter and unused space remain black. UI changes do not alter remote event dispatch, gestures, provider engine or artwork caching. MovieBox-TUI remains 0.1.30. No iPhone changes.
