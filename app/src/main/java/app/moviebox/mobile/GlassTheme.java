@@ -20,7 +20,7 @@ final class GlassTheme {
     }
     static GradientDrawable backdrop(){
         return new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{0xff321a2c,0xff172336,0xff151925,0xff080b13});
+                new int[]{0xff141414,0xff101010,0xff080808,0xff080808});
     }
     private GlassTheme(){}
 }
