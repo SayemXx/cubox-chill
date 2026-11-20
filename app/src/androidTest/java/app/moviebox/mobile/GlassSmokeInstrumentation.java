@@ -23,7 +23,7 @@ public class GlassSmokeInstrumentation extends Instrumentation {
         MainActivity main=(MainActivity)startActivitySync(new Intent(getTargetContext(),MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("downloads",true));
         runOnMainSync(main::showAbout);capture("glass-phone");
         final android.app.AlertDialog[] dialog=new android.app.AlertDialog[1];
-        runOnMainSync(()->dialog[0]=new android.app.AlertDialog.Builder(main).setTitle("Choose a server / quality").setItems(new String[]{"1080p · Original audio", "720p · Smaller download"},(d,n)->{}).setNegativeButton("Cancel",null).show());capture("glass-dialog");runOnMainSync(()->dialog[0].dismiss());
+        runOnMainSync(()->dialog[0]=new FrostedDialog(main).setTitle("Choose a server / quality").setItems(new String[]{"1080p · Original audio", "720p · Smaller download"},(d,n)->{}).setNegativeButton("Cancel",null).show());capture("glass-dialog");runOnMainSync(()->dialog[0].dismiss());
         runOnMainSync(()->{main.tvShell("downloads");main.renderDownloads();TvSupport.focus(main.root);});capture("glass-tv");
         File video=new File(getTargetContext().getFilesDir(),"glass-fixture.mp4");
         try(InputStream in=getContext().getAssets().open("test-video.mp4");FileOutputStream out=new FileOutputStream(video)){byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);}
