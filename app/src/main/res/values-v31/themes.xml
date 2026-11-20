@@ -1,6 +1,7 @@
 <resources>
     <!-- Cross-window blur is system controlled; the dark drawable remains readable when unavailable. -->
     <style name="Theme.Cubox.Dialog" parent="Theme.Cubox.Dialog.Base">
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackgroundBlurRadius">24dp</item>
         <item name="android:windowBlurBehindEnabled">false</item>
 
