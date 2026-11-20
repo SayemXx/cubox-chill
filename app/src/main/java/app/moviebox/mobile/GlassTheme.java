@@ -10,9 +10,9 @@ import android.graphics.drawable.Drawable;
 final class GlassTheme {
     static GradientDrawable panel(Context context,int radius){
         GradientDrawable d=new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{0xe6383942,0xd91a1b24,0xe6111219});
+                new int[]{0x705d6272,0x80272b39,0x99202530});
         d.setCornerRadius(radius*context.getResources().getDisplayMetrics().density);
-        d.setStroke(Math.max(1,Math.round(context.getResources().getDisplayMetrics().density)),0x38ffffff);
+        d.setStroke(Math.max(1,Math.round(context.getResources().getDisplayMetrics().density)),0x66ffffff);
         return d;
     }
     static Drawable action(Context context,int radius){
@@ -20,7 +20,7 @@ final class GlassTheme {
     }
     static GradientDrawable backdrop(){
         return new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-                new int[]{0xff261018,0xff101118,0xff08090d,0xff08090d});
+                new int[]{0xff321a2c,0xff172336,0xff151925,0xff080b13});
     }
     private GlassTheme(){}
 }
