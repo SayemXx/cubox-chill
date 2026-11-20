@@ -1,11 +1,9 @@
-# cubox & chill 0.6.6 validation
+# Cubox & Chill 0.6.7 validation
 
-November 20, 2026. Final app code: 1baf51e4a79300c66a659c6894a85194e84bae22.
+November 20, 2026. Final code e403002ac88e8fb90dd37edab421c651e8b1f1f1. GitHub run 44728623073 passed native builds for ARM32/ARM64/x86_64, APK assembly, unit tests and lint. Local build, 15 unit tests and lint also passed.
 
-Local APK assembly, 15 unit tests and lint passed. GlassSmokeInstrumentation passed on the phone emulator: app screens, forced TV shell, server-selection dialog, local video playback and controller show/hide. Final app/popup screenshots were manually reviewed. Physical TV and phone hardware were not tested.
+FrostedDialog captures a <=240px app-window snapshot before opening, runs two separable box-blur passes and clips the opaque result inside the rounded popup behind the glass overlay. Native dialog background blur is explicitly disabled after installing the snapshot. Outside content and popup labels remain sharp. All app/player AlertDialog builders use this path. The snapshot is static while the popup is open; video SurfaceViews are not captured and have a dark backing. No continuous screenshot storage or upload occurs.
 
-Android 12+ dialogs request 24dp background blur only inside their translucent window; full-screen blur-behind is disabled. The emulator reported blur supported/enabled; screenshots confirm the surrounding app stays sharp. System/device blur availability controls the effect. Older devices use the translucent dark fallback.
+GlassSmokeInstrumentation passed after installing the final build. The final popup screenshot was manually reviewed and shows bounded blur with native blur disabled by the app. A command attempting to disable global emulator blur failed with Android SecurityException, so this is not claimed as a global-system-setting test. An initial emulator System UI startup stall was dismissed before repeating the checks. No physical phone/TV performance test was performed.
 
-App-wide glass-style surfaces use transparent gradients, rounded geometry and reflective gradient edges. App cards/navigation do not have live per-view backdrop blur or optical refraction. Background remains black/charcoal. Classic v0.6.4 player controls remain, with settings/subtitle actions opening the matching themed dialogs. No changes to provider engine, gesture algorithms or persistent artwork cache.
-
-Final cloud run: 44705075701. Native builds for all three ABIs, APK assembly, unit tests and lint passed. Release uses this artifact, signed with the existing update key. MovieBox-TUI stays at 0.1.30. Supported ABIs: ARM32, ARM64 and x86_64.
+Launcher play mark and in-app Cubox & Chill name use #A54D60 -> #6A2034 -> #300D19. Player layout, black background, gestures and cache behavior are retained. Release uses the existing signing key.
