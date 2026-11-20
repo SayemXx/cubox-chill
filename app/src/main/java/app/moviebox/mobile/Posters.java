@@ -14,6 +14,8 @@ import java.util.concurrent.*;
 /** Memory + disk artwork cache, shared requests, and bounded background decoding. */
 final class Posters {
     private static final ExecutorService IO=Executors.newFixedThreadPool(2);
+    private static final ExecutorService LOCAL=Executors.newSingleThreadExecutor();
+    private static long lastPrune;
     private static final Handler MAIN=new Handler(Looper.getMainLooper());
     private static final Map<String,List<WeakReference<ImageView>>> PENDING=new HashMap<>();
     private static ArtworkCache disk;
@@ -24,23 +26,40 @@ final class Posters {
     static void load(ImageView view,String url){
         view.setTag(url);
         if(url==null||(!url.startsWith("https://")&&!url.startsWith("http://")))return;
-        Bitmap cached=CACHE.get(url);if(cached!=null){view.setImageBitmap(cached);return;}
-        if(disk==null)disk=new ArtworkCache(new File(view.getContext().getApplicationContext().getCacheDir(),"artwork-v1"),64L*1024*1024);
+        if(disk==null){
+            android.content.Context context=view.getContext().getApplicationContext();
+            disk=new ArtworkCache(new File(context.getFilesDir(),"artwork-v1"),128L*1024*1024);
+            File previous=new File(context.getCacheDir(),"artwork-v1");
+            LOCAL.execute(()->disk.migrateFrom(previous));
+        }
+        long now=System.currentTimeMillis();
+        if(lastPrune==0||now-lastPrune>=24L*60*60*1000){
+            lastPrune=now;LOCAL.execute(()->disk.prune(now));
+        }
+        Bitmap cached=CACHE.get(url);
+        if(cached!=null){view.setImageBitmap(cached);LOCAL.execute(()->disk.touch(url,now));return;}
         List<WeakReference<ImageView>> waiting=PENDING.get(url);
         if(waiting!=null){waiting.add(new WeakReference<>(view));return;}
         waiting=new ArrayList<>();waiting.add(new WeakReference<>(view));PENDING.put(url,waiting);
-        IO.execute(()->{
-            Bitmap bitmap=null;
-            try{
-                byte[] bytes=disk.get(url,System.currentTimeMillis());if(bytes!=null)bitmap=decode(bytes);
-                if(bitmap==null){bytes=download(url);if(bytes!=null){bitmap=decode(bytes);if(bitmap!=null)disk.put(url,bytes,System.currentTimeMillis());}}
-                if(bitmap!=null)CACHE.put(url,bitmap);
-            }catch(Exception ignored){}
-            Bitmap result=bitmap;
-            MAIN.post(()->{
-                List<WeakReference<ImageView>> targets=PENDING.remove(url);if(targets==null||result==null)return;
-                for(WeakReference<ImageView> ref:targets){ImageView target=ref.get();if(target!=null&&url.equals(target.getTag()))target.setImageBitmap(result);}
+        LOCAL.execute(()->{
+            byte[] bytes=disk.get(url,System.currentTimeMillis());
+            Bitmap bitmap=bytes==null?null:decode(bytes);
+            if(bitmap!=null){deliver(url,bitmap);return;}
+            IO.execute(()->{
+                Bitmap downloaded=null;
+                try{
+                    byte[] data=download(url);
+                    if(data!=null){downloaded=decode(data);if(downloaded!=null)disk.put(url,data,System.currentTimeMillis());}
+                }catch(Exception ignored){}
+                deliver(url,downloaded);
             });
+        });
+    }
+    private static void deliver(String url,Bitmap result){
+        if(result!=null)CACHE.put(url,result);
+        MAIN.post(()->{
+            List<WeakReference<ImageView>> targets=PENDING.remove(url);if(targets==null||result==null)return;
+            for(WeakReference<ImageView> ref:targets){ImageView target=ref.get();if(target!=null&&url.equals(target.getTag()))target.setImageBitmap(result);}
         });
     }
     private static Bitmap decode(byte[] bytes){
