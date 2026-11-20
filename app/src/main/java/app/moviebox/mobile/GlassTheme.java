@@ -28,6 +28,15 @@ final class GlassTheme {
         d.setCornerRadius(radius*density);
         return d;
     }
+    static void brand(android.widget.TextView label){
+        label.setTextColor(Color.WHITE);
+        label.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
+            float width=label.getPaint().measureText(label.getText().toString());
+            label.getPaint().setShader(new LinearGradient(0,0,Math.max(1,width),0,
+                new int[]{0xffa54d60,0xff6a2034,0xff300d19},null,Shader.TileMode.CLAMP));
+            label.invalidate();
+        });
+    }
     static GradientDrawable accent(Context context,int radius){
         GradientDrawable d=panel(context,radius);
         d.setColors(new int[]{0xb8b93246,0x90500e1b,0xc0250b12});
