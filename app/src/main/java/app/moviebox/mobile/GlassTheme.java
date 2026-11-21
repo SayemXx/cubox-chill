@@ -29,17 +29,15 @@ final class GlassTheme {
         return d;
     }
     static void brand(android.widget.TextView label){
-        float density=label.getResources().getDisplayMetrics().density;
-        label.getPaint().setShader(null);
-        label.setTextColor(0xfffff4f6);
-        label.setGravity(android.view.Gravity.CENTER);
-        label.setSingleLine(true);
-        label.setPadding(Math.round(18*density),Math.round(8*density),Math.round(18*density),Math.round(8*density));
-        GradientDrawable capsule=new GradientDrawable(GradientDrawable.Orientation.TL_BR,
-            new int[]{0xff942b43,0xff59172b,0xff300e1b});
-        capsule.setCornerRadius(100*density);
-        capsule.setStroke(Math.max(1,Math.round(1.5f*density)),0xffd76c84);
-        label.setBackground(capsule);
+        label.setTextColor(Color.WHITE);
+        label.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
+            float width=label.getPaint().measureText(label.getText().toString());
+            label.getPaint().setShader(new LinearGradient(0,0,Math.max(1,width),0,
+                new int[]{label.getContext().getColor(R.color.brand_rose),
+                    label.getContext().getColor(R.color.brand_burgundy),
+                    label.getContext().getColor(R.color.brand_wine)},null,Shader.TileMode.CLAMP));
+            label.invalidate();
+        });
     }
     static GradientDrawable accent(Context context,int radius){
         GradientDrawable d=panel(context,radius);
