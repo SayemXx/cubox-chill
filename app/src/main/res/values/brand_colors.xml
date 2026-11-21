@@ -1,6 +1,6 @@
 <resources>
-    <!-- Lift the wine tones so the entire wordmark stays visible on dark glass. -->
-    <color name="brand_rose">#D7687C</color>
-    <color name="brand_burgundy">#C65770</color>
-    <color name="brand_wine">#B94F69</color>
+    <!-- User-selected left / middle / right gradient, shared by wordmark and icon. -->
+    <color name="brand_rose">#96002B</color>
+    <color name="brand_burgundy">#6D061E</color>
+    <color name="brand_wine">#96002B</color>
 </resources>
