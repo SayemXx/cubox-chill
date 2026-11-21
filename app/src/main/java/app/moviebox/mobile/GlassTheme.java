@@ -30,12 +30,21 @@ final class GlassTheme {
     }
     static void brand(android.widget.TextView label){
         label.setTextColor(Color.WHITE);
+        // Older Android GPUs cannot compose two linear gradients; only this small label
+        // needs a software layer on Android 8/8.1, not the surrounding app or player.
+        if(android.os.Build.VERSION.SDK_INT<28)label.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE,null);
         label.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
             float width=label.getPaint().measureText(label.getText().toString());
-            label.getPaint().setShader(new LinearGradient(0,0,Math.max(1,width),0,
+            Shader base=new LinearGradient(0,0,Math.max(1,width),0,
                 new int[]{label.getContext().getColor(R.color.brand_rose),
                     label.getContext().getColor(R.color.brand_burgundy),
-                    label.getContext().getColor(R.color.brand_wine)},null,Shader.TileMode.CLAMP));
+                    label.getContext().getColor(R.color.brand_wine)},null,Shader.TileMode.CLAMP);
+            Paint.FontMetrics fm=label.getPaint().getFontMetrics();
+            float top=label.getBaseline()-label.getTotalPaddingTop()+fm.ascent;
+            Shader sheen=new LinearGradient(0,top,0,top+Math.max(1,fm.descent-fm.ascent),
+                new int[]{0x60ffe5ec,0x18ffe5ec,0x00ffe5ec,0x20ffe5ec},
+                new float[]{0f,.38f,.55f,1f},Shader.TileMode.CLAMP);
+            label.getPaint().setShader(new ComposeShader(base,sheen,PorterDuff.Mode.SRC_OVER));
             label.invalidate();
         });
     }

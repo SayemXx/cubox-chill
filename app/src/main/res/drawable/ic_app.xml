@@ -9,4 +9,15 @@
             </gradient>
         </aapt:attr>
     </path>
+    <!-- A translucent reflection is clipped to the play mark, over the exact base colors. -->
+    <path android:pathData="M17,11L37,24L17,37z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="17" android:startY="11" android:endX="17" android:endY="37">
+                <item android:offset="0" android:color="#60FFE5EC"/>
+                <item android:offset="0.38" android:color="#18FFE5EC"/>
+                <item android:offset="0.55" android:color="#00FFE5EC"/>
+                <item android:offset="1" android:color="#20FFE5EC"/>
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>
