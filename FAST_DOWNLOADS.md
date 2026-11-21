@@ -17,3 +17,5 @@ Install app and androidTest APKs on an emulator and run:
     adb shell am instrument -w app.moviebox.mobile.test/app.moviebox.mobile.FastDownloadInstrumentation
 
 The fixture uses a local HTTP server and verifies parallel connections, required request headers, range fallback, pause/resume, changing ETags, truncated response retry, byte-for-byte offline reads, and removal. It never downloads third-party media.
+
+Validated November 21, 2026: local build, unit tests and lint passed. The headless Android emulator integration runner passed parallel ranges, header forwarding, ignored/rejected range fallback, pause/resume, changed ETag, truncated-body retry, byte-for-byte offline integrity and removal. GitHub Actions run 44927907902 also passed native ARM32/ARM64/x86_64 builds, APK assembly, unit tests and lint for source e2f0557d7825f78e6fce27d0325bc11e871ca482. No real-provider speed multiplier or physical-device throughput is claimed.
