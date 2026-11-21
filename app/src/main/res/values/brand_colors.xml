@@ -1,0 +1,6 @@
+<resources>
+    <!-- Lift the wine tones so the entire wordmark stays visible on dark glass. -->
+    <color name="brand_rose">#D77A86</color>
+    <color name="brand_burgundy">#CC6E7E</color>
+    <color name="brand_wine">#C36B7D</color>
+</resources>

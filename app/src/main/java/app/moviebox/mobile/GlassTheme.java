@@ -33,7 +33,9 @@ final class GlassTheme {
         label.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{
             float width=label.getPaint().measureText(label.getText().toString());
             label.getPaint().setShader(new LinearGradient(0,0,Math.max(1,width),0,
-                new int[]{0xffa54d60,0xff6a2034,0xff300d19},null,Shader.TileMode.CLAMP));
+                new int[]{label.getContext().getColor(R.color.brand_rose),
+                    label.getContext().getColor(R.color.brand_burgundy),
+                    label.getContext().getColor(R.color.brand_wine)},null,Shader.TileMode.CLAMP));
             label.invalidate();
         });
     }
