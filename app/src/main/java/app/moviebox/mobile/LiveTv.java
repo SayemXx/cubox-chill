@@ -74,7 +74,11 @@ final class LiveTv {
         for(int i=Math.max(0,limit-50);i<Math.min(limit,filtered.size());i++){
             M3uPlaylist.Channel c=filtered.get(i);LinearLayout card=new LinearLayout(a);card.setGravity(Gravity.CENTER_VERTICAL);card.setPadding(a.dp(8),a.dp(6),a.dp(8),a.dp(6));card.setBackground(GlassTheme.panel(a,18));LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.setMargins(0,a.dp(6),0,a.dp(4));rows.addView(card,cp);
             ImageView logo=new ImageView(a);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setImageResource(R.drawable.ic_live_tv);card.addView(logo,new LinearLayout.LayoutParams(a.dp(44),a.dp(44)));if(!c.logo.isEmpty())Posters.load(logo,c.logo);
-            Button play=a.secondary(c.name+"\n"+(c.external?"Official website ↗":c.group.isEmpty()?"Watch live":c.group),()->play(c));play.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);play.setTextSize(14);play.setPadding(a.dp(12),a.dp(6),a.dp(6),a.dp(6));play.setMaxLines(3);play.setMinHeight(a.dp(64));card.addView(play,new LinearLayout.LayoutParams(0,-2,1));
+            Button play=a.secondary(c.name+"\n"+(c.external?"Official website ↗":c.group.isEmpty()?"Watch live":c.group),()->play(c));
+            // Keep the channel label on the outer card; only show feedback while pressed or TV-focused.
+            play.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x18ffffff),null,new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE)));
+            play.setStateListAnimator(null);play.setElevation(0);
+            play.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);play.setTextSize(14);play.setPadding(a.dp(12),a.dp(6),a.dp(6),a.dp(6));play.setMaxLines(3);play.setMinHeight(a.dp(64));card.addView(play,new LinearLayout.LayoutParams(0,-2,1));
             Button favorite=a.secondary(favorites.contains(LiveTvStore.hash(c.url))?"★":"☆",()->{store.favorite(c);render();});favorite.setContentDescription("Favorite "+c.name);card.addView(favorite,new LinearLayout.LayoutParams(a.dp(48),a.dp(48)));
         }
         if(filtered.size()>limit)rows.addView(a.secondary("Next channels ("+Math.min(limit,filtered.size())+" / "+filtered.size()+")",()->{limit+=50;render();}));

@@ -6,8 +6,8 @@ android {
         applicationId = "app.moviebox.mobile"
         minSdk = 26
         targetSdk = 35
-        versionCode = 21
-        versionName = "0.7.1"
+        versionCode = 22
+        versionName = "0.7.2"
         buildConfigField("String", "ENGINE_VERSION", "\"0.1.30\"")
         buildConfigField("String", "ENGINE_COMMIT", "\"1fe8874d9d13b11ead730364dc58ac6576ba1fcf\"")
         buildConfigField("String", "UPDATE_REPOSITORY", "\"${providers.gradleProperty("updateRepository").getOrElse("SayemXx/cubox-chill")}\"")
