@@ -23,18 +23,22 @@ final class Offline {
         context=c.getApplicationContext();
         StandaloneDatabaseProvider db=new StandaloneDatabaseProvider(context);
         cache=new SimpleCache(new File(context.getFilesDir(),"offline-media"),new NoOpCacheEvictor(),db);
-        java.util.concurrent.Executor executor=Executors.newFixedThreadPool(3);
+        java.util.concurrent.Executor executor=Executors.newFixedThreadPool(4);
         DownloaderFactory factory=request -> {
             JSONObject source;
             try { source=new JSONObject(new String(request.data,StandardCharsets.UTF_8)).getJSONObject("source"); }
             catch(JSONException e) { source=new JSONObject(); }
-            DataSource.Factory network=new DefaultHttpDataSource.Factory().setUserAgent("cubox-chill/0.1.0")
+            HttpDataSource.Factory network=new DefaultHttpDataSource.Factory().setUserAgent("cubox-chill/0.1.0")
                     .setDefaultRequestProperties(headers(source)).setAllowCrossProtocolRedirects(true)
-                    .setConnectTimeoutMs(20000).setReadTimeoutMs(30000);
-            return new DefaultDownloaderFactory(new CacheDataSource.Factory().setCache(cache).setUpstreamDataSourceFactory(network),executor).createDownloader(request);
+                    .setConnectTimeoutMs(10000).setReadTimeoutMs(10000);
+            Downloader standard=new DefaultDownloaderFactory(new CacheDataSource.Factory().setCache(cache).setUpstreamDataSourceFactory(network),executor).createDownloader(request);
+            boolean direct=androidx.media3.common.util.Util.inferContentTypeForUriAndMimeType(request.uri,request.mimeType)==C.CONTENT_TYPE_OTHER;
+            return direct?new FastDownloader(request,cache,network,standard):standard;
         };
         manager=new DownloadManager(context,new DefaultDownloadIndex(db),factory);
         manager.setMaxParallelDownloads(2);
+        manager.setMinRetryCount(5);
+        manager.setRequirements(new androidx.media3.exoplayer.scheduler.Requirements(androidx.media3.exoplayer.scheduler.Requirements.NETWORK));
         manager.resumeDownloads();
     }
     static Map<String,String> headers(JSONObject source) {
@@ -54,7 +58,7 @@ final class Offline {
         return b.build();
     }
     static DataSource.Factory playbackFactory(JSONObject source, boolean offlineOnly) {
-        DataSource.Factory network=new DefaultHttpDataSource.Factory().setUserAgent("cubox-chill/0.1.0").setDefaultRequestProperties(headers(source)).setAllowCrossProtocolRedirects(true);
+        HttpDataSource.Factory network=new DefaultHttpDataSource.Factory().setUserAgent("cubox-chill/0.1.0").setDefaultRequestProperties(headers(source)).setAllowCrossProtocolRedirects(true);
         return new CacheDataSource.Factory().setCache(cache).setUpstreamDataSourceFactory(offlineOnly?null:new DefaultDataSource.Factory(context,network)).setCacheWriteDataSinkFactory(null);
     }
     interface Result { void complete(String error); }
@@ -84,10 +88,28 @@ final class Offline {
             public void onPrepareError(DownloadHelper h, IOException e) { h.release();result.complete("Cannot prepare download: "+e.getMessage()); }
         });
     }
+    static final Map<String,DownloadRate> rates=new HashMap<>();
+    static String transferStatus(Download d){
+        if(d.state!=Download.STATE_DOWNLOADING){rates.remove(d.request.id);return "";}
+        DownloadRate rate=rates.get(d.request.id);
+        if(rate==null){rate=new DownloadRate();rates.put(d.request.id,rate);}
+        double speed=rate.sample(android.os.SystemClock.elapsedRealtime(),d.getBytesDownloaded());
+        if(speed<1)return " · Connecting…";
+        String value=speed>=1048576?String.format(Locale.ROOT,"%.1f MB/s",speed/1048576):String.format(Locale.ROOT,"%.0f KB/s",speed/1024);
+        if(d.contentLength>d.getBytesDownloaded()){
+            long seconds=(long)((d.contentLength-d.getBytesDownloaded())/speed);
+            value+=" · "+(seconds>=3600?seconds/3600+"h "+(seconds%3600)/60+"m":seconds>=60?seconds/60+"m":seconds+"s")+" remaining";
+        }
+        return " · "+value;
+    }
     static List<Download> downloads() {
         List<Download> list=new ArrayList<>();
         try(DownloadCursor cursor=manager.getDownloadIndex().getDownloads()) { while(cursor.moveToNext())list.add(cursor.getDownload()); }
         catch(IOException ignored) {}
+        Map<String,Download> active=new HashMap<>();
+        for(Download d:manager.getCurrentDownloads())active.put(d.request.id,d);
+        for(int i=0;i<list.size();i++){Download current=active.get(list.get(i).request.id);if(current!=null)list.set(i,current);}
+        Set<String> ids=new HashSet<>();for(Download d:list)ids.add(d.request.id);rates.keySet().retainAll(ids);
         return list;
     }
     static JSONObject metadata(Download d) {
