@@ -1,14 +1,18 @@
 # Live TV sources and behavior
 
-Reviewed November 21, 2026. The Live TV tab has BD, India, Sports and Add new. The default source for each category is the corresponding IPTV-org community playlist:
+Reviewed November 21, 2026. The Live TV tab has BD, India, Sports, Cartoons, Movies, Music, News and Add new. The default source for each category is the corresponding IPTV-org community playlist:
 
 - BD: https://iptv-org.github.io/iptv/countries/bd.m3u
 - India: https://iptv-org.github.io/iptv/countries/in.m3u
 - Sports: https://iptv-org.github.io/iptv/categories/sports.m3u
+- Cartoons (Kids feed): https://iptv-org.github.io/iptv/categories/kids.m3u
+- Movies: https://iptv-org.github.io/iptv/categories/movies.m3u
+- Music: https://iptv-org.github.io/iptv/categories/music.m3u
+- News: https://iptv-org.github.io/iptv/categories/news.m3u
 - Project, provenance and removal requests: https://github.com/iptv-org/iptv
 - Directory license: https://github.com/iptv-org/iptv/blob/master/LICENSE
 
-All three playlists returned HTTP 200 during research (45, 873 and 537 entries respectively, before app deduplication/filtering). This checks directory availability, not every channel or its rights in every country. IPTV-org describes its entries as user-submitted publicly available streams. Directory licensing does not grant rights to the underlying broadcasts. No paid-channel access, geoblock bypass or fixed uptime is promised.
+The original three playlists returned HTTP 200 during research (45, 873 and 537 entries respectively, before app deduplication/filtering). This checks directory availability, not every channel or its rights in every country. IPTV-org describes its entries as user-submitted publicly available streams. Directory licensing does not grant rights to the underlying broadcasts. No paid-channel access, geoblock bypass or fixed uptime is promised.
 
 ## Official picks
 
@@ -36,3 +40,7 @@ Sports includes official service links for FIFA+ on DAZN and DD Sports/WAVES alo
 Users can import HTTP/HTTPS M3U playlist URLs (including GitHub blob URLs, converted to raw content), direct HLS URLs, or M3U files through Android's document picker. Only HTTP/HTTPS streams are accepted; unsupported DRM directives are skipped. Imports are bounded at 5 MB and 10,000 channels, with up to 30 saved custom playlists. Relative URLs use the final redirected playlist address. Playlist credentials remain in private app storage and must never be included in error messages or analytics.
 
 Channel lists use a 24-hour disk cache, immediately display saved data, and retain it when refresh fails. Logos use the existing artwork cache. Only 50 channel rows are rendered per page. Favorites, search, source selection and removal are available. Live playback uses the existing player, starts at the default live position instead of a movie resume timestamp, offers LIVE to return to the edge, and retries three consecutive playback errors. Provider/region failures ultimately show a clear error. External official pages require an installed browser or compatible app; the app does not scrape protected video or extract YouTube streams.
+
+## v0.7.1 category expansion
+
+The four new category playlists returned valid EXTM3U content on November 21, 2026: Kids 458, Movies 782, Music 784, News 1,073 entries before deduplication/filtering. Cartoons uses the broader Kids feed, which also includes children's programming. These are live channels, not the on-demand Movies library. The News category also offers existing official news picks. Categories without curated official entries do not show an empty Official picks source. All categories share search, favorites, cached lists and custom imports. The horizontal category strip retains the selected category in view. Counts and stream availability can change.

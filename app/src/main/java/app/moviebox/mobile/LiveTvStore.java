@@ -10,6 +10,19 @@ import java.security.MessageDigest;
 import java.util.*;
 
 final class LiveTvStore {
+    static final List<String> CATEGORIES=Collections.unmodifiableList(Arrays.asList("BD","India","Sports","Cartoons","Movies","Music","News"));
+    static String playlistPath(String category){
+        switch(category){
+            case "BD":return "countries/bd";
+            case "India":return "countries/in";
+            case "Sports":return "categories/sports";
+            case "Cartoons":return "categories/kids";
+            case "Movies":return "categories/movies";
+            case "Music":return "categories/music";
+            case "News":return "categories/news";
+            default:throw new IllegalArgumentException("Unknown TV category");
+        }
+    }
     static final long FRESH_MS=24*60*60*1000L;
     static final int MAX_BYTES=5*1024*1024;
     final Context context;final File directory;
@@ -24,9 +37,9 @@ final class LiveTvStore {
     }
     LiveTvStore(Context context){this.context=context.getApplicationContext();directory=new File(context.getFilesDir(),"live-playlists");directory.mkdirs();}
     List<Source> sources(String category){
-        List<Source> list=new ArrayList<>();String path=category.equals("BD")?"countries/bd":category.equals("India")?"countries/in":"categories/sports";
+        List<Source> list=new ArrayList<>();String path=playlistPath(category);
         list.add(new Source("iptv-"+category,"IPTV-org · "+category,"https://iptv-org.github.io/iptv/"+path+".m3u",category,true));
-        list.add(new Source("official-"+category,"Official picks","",category,true));
+        if(Arrays.asList("BD","India","Sports","News").contains(category))list.add(new Source("official-"+category,"Official picks","",category,true));
         try{JSONArray saved=new JSONArray(context.getSharedPreferences("live-tv",0).getString("sources","[]"));
             for(int i=0;i<saved.length();i++){JSONObject s=saved.getJSONObject(i);if(category.equals(s.optString("category")))list.add(new Source(s.getString("id"),s.getString("name"),s.optString("url"),category,false));}
         }catch(JSONException ignored){}
@@ -74,7 +87,7 @@ final class LiveTvStore {
         for(int redirect=0;redirect<6;redirect++){
             if(!M3uPlaylist.web(url))throw new IOException("Use an HTTP or HTTPS playlist URL");
             HttpURLConnection connection=(HttpURLConnection)new URL(url).openConnection();
-            connection.setConnectTimeout(15000);connection.setReadTimeout(15000);connection.setInstanceFollowRedirects(false);connection.setRequestProperty("User-Agent","CuboxChill/0.7.0");
+            connection.setConnectTimeout(15000);connection.setReadTimeout(15000);connection.setInstanceFollowRedirects(false);connection.setRequestProperty("User-Agent","CuboxChill/"+BuildConfig.VERSION_NAME);
             try{int code=connection.getResponseCode();
                 if(code>=300&&code<400){String location=connection.getHeaderField("Location");if(location==null)throw new IOException("Invalid playlist redirect");url=new URL(new URL(url),location).toString();continue;}
                 if(code!=200)throw new IOException("Playlist server returned HTTP "+code);

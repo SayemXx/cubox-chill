@@ -17,14 +17,16 @@ final class LiveTv {
     String category="BD",query="",pendingName="Imported playlist",pendingCategory="BD";
     LiveTvStore.Source source;LiveTvStore.Listing listing;
     TextView status;LinearLayout rows;int requestToken,limit=50;boolean onlyFavorites;
-    LiveTv(MainActivity activity){a=activity;store=new LiveTvStore(a);category=a.getSharedPreferences("live-tv",0).getString("category","BD");if(!Arrays.asList("BD","India","Sports").contains(category))category="BD";}
+    LiveTv(MainActivity activity){a=activity;store=new LiveTvStore(a);category=a.getSharedPreferences("live-tv",0).getString("category","BD");if(!LiveTvStore.CATEGORIES.contains(category))category="BD";}
     boolean visible(int token){return token==requestToken&&a.screen.equals("live")&&!a.isFinishing()&&!a.isDestroyed();}
     void show(){
         requestToken++;a.shell("live");a.body.addView(a.heading("Live TV",30));
-        HorizontalScrollView strip=new HorizontalScrollView(a);strip.setHorizontalScrollBarEnabled(false);LinearLayout tabs=new LinearLayout(a);
-        for(String group:new String[]{"BD","India","Sports","+ Add new"}){
+        HorizontalScrollView strip=new HorizontalScrollView(a);strip.setHorizontalScrollBarEnabled(true);LinearLayout tabs=new LinearLayout(a);
+        List<String> groups=new ArrayList<>(LiveTvStore.CATEGORIES);groups.add("+ Add new");
+        for(String group:groups){
             Button tab=a.secondary(group,()->{if(group.startsWith("+")){addDialog();return;}category=group;source=null;listing=null;query="";onlyFavorites=false;a.getSharedPreferences("live-tv",0).edit().putString("category",category).apply();show();});
             tab.setBackground(group.equals(category)?GlassTheme.accent(a,24):GlassTheme.panel(a,24));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,a.dp(44));p.setMargins(0,0,a.dp(8),0);tabs.addView(tab,p);
+            if(group.equals(category))strip.post(()->strip.scrollTo(Math.max(0,tab.getLeft()-a.dp(8)),0));
         }
         strip.addView(tabs);a.body.addView(strip);
         List<LiveTvStore.Source> sources=store.sources(category);
