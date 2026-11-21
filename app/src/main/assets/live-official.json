@@ -1,0 +1,105 @@
+[
+  {
+    "url": "https://btvlive.gov.bd/channel/BTV",
+    "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png",
+    "website": "https://btvlive.gov.bd/",
+    "name": "BTV",
+    "note": "Opens the official BTV player; its stream requires a broadcaster session.",
+    "group": "BD",
+    "external": true
+  },
+  {
+    "url": "https://btvlive.gov.bd/channel/BTV-News",
+    "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1735648543857_Poster.jpg",
+    "website": "https://btvlive.gov.bd/",
+    "name": "BTV News",
+    "note": "Opens the official BTV player; its stream requires a broadcaster session.",
+    "group": "BD",
+    "external": true
+  },
+  {
+    "url": "https://btvlive.gov.bd/channel/BTV-Chattogram",
+    "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193167149_3.png",
+    "website": "https://btvlive.gov.bd/",
+    "name": "BTV Chattogram",
+    "note": "Opens the official BTV player; its stream requires a broadcaster session.",
+    "group": "BD",
+    "external": true
+  },
+  {
+    "url": "https://btvlive.gov.bd/channel/Sangsad-Television",
+    "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193184888_2.png",
+    "website": "https://btvlive.gov.bd/",
+    "name": "Sangsad Television",
+    "note": "Opens the official BTV player; its stream requires a broadcaster session.",
+    "group": "BD",
+    "external": true
+  },
+  {
+    "note": "Hindi news",
+    "url": "https://pl-indiatvnews.akamaized.net/out/v1/db79179b608641ceaa5a4d0dd0dca8da/index.m3u8",
+    "group": "India",
+    "name": "India TV",
+    "website": "https://www.indiatvnews.com/livetv"
+  },
+  {
+    "note": "English news",
+    "url": "https://ndtv24x7elemarchana.akamaized.net/hls/live/2003678/ndtv24x7/master.m3u8",
+    "group": "India",
+    "name": "NDTV 24x7",
+    "website": "https://www.ndtv.com/livetv-ndtv24x7"
+  },
+  {
+    "note": "Hindi news",
+    "url": "https://ndtvindiaelemarchana.akamaized.net/hls/live/2003679/ndtvindia/master.m3u8",
+    "group": "India",
+    "name": "NDTV India",
+    "website": "https://ndtv.in/livetv"
+  },
+  {
+    "note": "English news",
+    "url": "https://indiatodaylive.akamaized.net/hls/live/2014320/indiatoday/indiatodaylive/playlist.m3u8",
+    "group": "India",
+    "name": "India Today",
+    "website": "https://www.indiatoday.in/livetv"
+  },
+  {
+    "note": "Action sports and sports programming",
+    "url": "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8",
+    "group": "Sports",
+    "name": "Red Bull TV",
+    "website": "https://www.redbull.tv/en_US/epg"
+  },
+  {
+    "group": "BD",
+    "url": "https://www.jamunanews.tv/live",
+    "website": "https://www.jamunanews.tv/live",
+    "note": "Official live page",
+    "external": true,
+    "name": "Jamuna TV"
+  },
+  {
+    "group": "BD",
+    "url": "https://www.channel24bd.tv/live",
+    "website": "https://www.channel24bd.tv/live",
+    "note": "Official live page",
+    "external": true,
+    "name": "Channel 24"
+  },
+  {
+    "group": "Sports",
+    "url": "https://www.dazn.com/fifaplus",
+    "website": "https://www.dazn.com/fifaplus",
+    "note": "Official service; account and regional availability apply",
+    "external": true,
+    "name": "FIFA+"
+  },
+  {
+    "group": "Sports",
+    "url": "https://prasarbharati.gov.in/en/waves/",
+    "website": "https://prasarbharati.gov.in/en/waves/",
+    "note": "Official broadcaster service",
+    "external": true,
+    "name": "DD Sports / WAVES"
+  }
+]

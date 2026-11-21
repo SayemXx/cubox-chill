@@ -21,6 +21,8 @@ import java.util.*;
 @androidx.annotation.OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
 public class PlayerActivity extends Activity {
     ExoPlayer player; PlayerView view; JSONObject source; String key; long position;
+    boolean live=false; int liveRetries=0;
+    final Runnable reconnectLive=()->{if(player!=null&&live&&!isFinishing()){player.seekToDefaultPosition();player.prepare();player.play();}};
     boolean playWhenReady=true,locked=false; float speed=1f,subtitleSize=.0533f;
     int fit=AspectRatioFrameLayout.RESIZE_MODE_FIT,repeat=Player.REPEAT_MODE_OFF;
     int orientation=ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
@@ -35,9 +37,11 @@ public class PlayerActivity extends Activity {
         getWindow().setStatusBarColor(Color.BLACK);getWindow().setNavigationBarColor(Color.BLACK);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);immersive();
         try{source=new JSONObject(getIntent().getStringExtra("source"));}catch(Exception e){finish();return;}
+        live=getIntent().getBooleanExtra("live",false);
         key=getIntent().getStringExtra("key");if(key==null)key=source.optString("url");
         position=state==null?getSharedPreferences("resume",0).getLong(key,0):state.getLong("position");
         speed=getSharedPreferences("player",0).getFloat("speed",1f);fit=getSharedPreferences("player",0).getInt("fit",AspectRatioFrameLayout.RESIZE_MODE_FIT);subtitleSize=getSharedPreferences("player",0).getFloat("subtitleSize",.0533f);
+        if(live){position=0;speed=1f;repeat=Player.REPEAT_MODE_OFF;}
         if(state!=null){playWhenReady=state.getBoolean("playing",true);locked=state.getBoolean("locked",false);}
         root=new FrameLayout(this);root.setBackgroundColor(Color.BLACK);
         view=new PlayerView(this);view.setBackgroundColor(Color.BLACK);view.setShutterBackgroundColor(Color.BLACK);
@@ -57,6 +61,7 @@ public class PlayerActivity extends Activity {
         toolbar=new LinearLayout(this);toolbar.setGravity(Gravity.CENTER_VERTICAL);toolbar.setPadding(dp(8),dp(6),dp(8),dp(6));toolbar.setBackgroundColor(0xb8000000);
         toolbar.addView(control("‹","Back to title",this::finish),new LinearLayout.LayoutParams(dp(44),dp(44)));
         TextView title=new TextView(this);title.setText(getIntent().getStringExtra("title"));title.setTextSize(14);title.setTextColor(Color.WHITE);title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);toolbar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+        if(live)toolbar.addView(control("LIVE","Return to live edge",()->{if(player!=null)player.seekToDefaultPosition();}),new LinearLayout.LayoutParams(dp(48),dp(44)));
         toolbar.addView(control("Fit","Change video size",this::chooseFit),new LinearLayout.LayoutParams(dp(48),dp(44)));
         toolbar.addView(control("⋮","Player settings",this::settings),new LinearLayout.LayoutParams(dp(44),dp(44)));
         root.addView(toolbar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
@@ -85,9 +90,9 @@ public class PlayerActivity extends Activity {
         MediaItem item=Offline.item(source,getIntent().getStringExtra("title"));String downloadId=getIntent().getStringExtra("downloadId");
         if(downloadId!=null)try{androidx.media3.exoplayer.offline.Download d=Offline.manager.getDownloadIndex().getDownload(downloadId);if(d!=null)item=d.request.toMediaItem();}catch(Exception ignored){}
         player.addListener(new Player.Listener(){
-            @Override public void onPlaybackStateChanged(int state){if(state==Player.STATE_ENDED){position=0;getSharedPreferences("resume",0).edit().remove(key).apply();}}
-            @Override public void onPlayerError(PlaybackException e){if(isFinishing())return;new FrostedDialog(PlayerActivity.this).setTitle("Playback unavailable").setMessage(e.getErrorCodeName()+"\nTry another server or quality from the title page.").setPositiveButton("Retry",(d,w)->{if(player!=null){player.prepare();player.play();}}).setNegativeButton("Back",(d,w)->finish()).show();}
-        });player.setMediaItem(item);player.seekTo(position);player.prepare();player.setPlayWhenReady(playWhenReady);
+            @Override public void onPlaybackStateChanged(int state){if(live&&state==Player.STATE_READY)liveRetries=0;if(state==Player.STATE_ENDED){position=0;getSharedPreferences("resume",0).edit().remove(key).apply();}}
+            @Override public void onPlayerError(PlaybackException e){if(isFinishing())return;if(live&&liveRetries<3){gestures.removeCallbacks(reconnectLive);gestures.postDelayed(reconnectLive,2000L<<liveRetries++);Toast.makeText(PlayerActivity.this,"Live connection interrupted · reconnecting…",Toast.LENGTH_SHORT).show();return;}new FrostedDialog(PlayerActivity.this).setTitle(live?"Channel unavailable":"Playback unavailable").setMessage(live?"This feed may be offline, restricted to another region, or require its provider app. Refresh the playlist or choose another channel.":e.getErrorCodeName()+"\nTry another server or quality from the title page.").setPositiveButton("Retry",(d,w)->{if(player!=null){liveRetries=0;if(live)player.seekToDefaultPosition();player.prepare();player.play();}}).setNegativeButton("Back",(d,w)->finish()).show();}
+        });player.setMediaItem(item);if(live)player.seekToDefaultPosition();else player.seekTo(position);player.prepare();player.setPlayWhenReady(playWhenReady);
     }
     void settings(){if(player==null)return;String[] options={"Playback speed · "+speed+"×","Audio track","Subtitles","Subtitle size","Video size / aspect ratio","Screen rotation","Lock controls","Picture-in-picture",repeat==Player.REPEAT_MODE_ONE?"Repeat · On":"Repeat · Off","Gesture guide"};new FrostedDialog(this).setTitle("Player controls").setItems(options,(d,n)->{switch(n){case 0->chooseSpeed();case 1->chooseTrack(C.TRACK_TYPE_AUDIO);case 2->chooseTrack(C.TRACK_TYPE_TEXT);case 3->chooseSubtitleSize();case 4->chooseFit();case 5->chooseOrientation();case 6->setLocked(true);case 7->miniPlayer();case 8->{repeat=repeat==Player.REPEAT_MODE_ONE?Player.REPEAT_MODE_OFF:Player.REPEAT_MODE_ONE;player.setRepeatMode(repeat);}case 9->new FrostedDialog(this).setTitle("Playback gestures").setMessage("Slide horizontally to preview a position; release to seek. Slide right to go forward or left to go back.\n\nTap the left/right side twice for 10 seconds, three times for 20, four times for 30, and keep tapping for more.\n\nSwipe up/down in the leftmost quarter for brightness or the rightmost quarter for volume. The middle half ignores vertical swipes.\n\nTap once to show controls. Lock also freezes rotation; tap Unlock or press Back to unlock.").setPositiveButton("Got it",null).show();}}).show();}
     void chooseSpeed(){if(player==null)return;float[] speeds={.25f,.5f,.75f,1f,1.25f,1.5f,1.75f,2f};String[] labels=new String[speeds.length];int selected=3;for(int i=0;i<speeds.length;i++){labels[i]=speeds[i]+"×";if(speeds[i]==speed)selected=i;}new FrostedDialog(this).setTitle("Playback speed").setSingleChoiceItems(labels,selected,(d,n)->{speed=speeds[n];if(player!=null)player.setPlaybackSpeed(speed);getSharedPreferences("player",0).edit().putFloat("speed",speed).apply();d.dismiss();}).show();}
@@ -135,6 +140,6 @@ public class PlayerActivity extends Activity {
     }
     @Override protected void onDestroy(){gestures.removeCallbacksAndMessages(null);super.onDestroy();}
     @Override public void onBackPressed(){if(locked)setLocked(false);else if(TvSupport.enabled(this)&&view.isControllerFullyVisible())view.hideController();else super.onBackPressed();}
-    @Override protected void onStop(){if(player!=null){position=player.getPlaybackState()==Player.STATE_ENDED?0:player.getCurrentPosition();playWhenReady=player.getPlayWhenReady();selection=player.getTrackSelectionParameters();getSharedPreferences("resume",0).edit().putLong(key,position).apply();view.setPlayer(null);player.release();player=null;}super.onStop();}
+    @Override protected void onStop(){gestures.removeCallbacks(reconnectLive);if(player!=null){position=player.getPlaybackState()==Player.STATE_ENDED?0:player.getCurrentPosition();playWhenReady=player.getPlayWhenReady();selection=player.getTrackSelectionParameters();if(!live)getSharedPreferences("resume",0).edit().putLong(key,position).apply();view.setPlayer(null);player.release();player=null;}super.onStop();}
     @Override protected void onSaveInstanceState(Bundle b){b.putLong("position",player==null?position:player.getCurrentPosition());b.putBoolean("playing",player==null?playWhenReady:player.getPlayWhenReady());b.putBoolean("locked",locked);super.onSaveInstanceState(b);}
 }
